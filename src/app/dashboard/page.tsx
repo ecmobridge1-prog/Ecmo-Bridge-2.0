@@ -1,24 +1,35 @@
+"use client";
+
+import { useState } from "react";
+import Sidebar from "./_components/sidebar";
+import PatientsECMOs from "./_components/patients-ecmos";
+import MatchList from "./_components/match-list";
+import Chat from "./_components/chat";
+import UserSync from "./_components/user-sync";
+
 export default function Dashboard() {
+  const [activeSection, setActiveSection] = useState("patients-ecmos");
+
+  const renderContent = () => {
+    switch (activeSection) {
+      case "patients-ecmos":
+        return <PatientsECMOs />;
+      case "match-list":
+        return <MatchList />;
+      case "chat":
+        return <Chat />;
+      default:
+        return <PatientsECMOs />;
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-900 via-purple-600 to-purple-400 flex items-center justify-center pt-20">
-      <main className="max-w-7xl mx-auto px-6 py-12">
-        <div className="text-center">
-          <h1 className="text-5xl font-bold text-white mb-6">
-            Dashboard
-          </h1>
-          <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl p-12 max-w-5xl mx-auto">
-            <h2 className="text-3xl font-semibold text-gray-800 mb-6">
-              Dashboard Page
-            </h2>
-            <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-              This is the dashboard page. Here you can add charts, metrics, 
-              and other data visualization components for your ECMO Bridge 
-              application.
-            </p>
-            <p className="text-lg text-gray-600 leading-relaxed">
-              Dashboard widgets and analytics will be added here.
-            </p>
-          </div>
+    <div className="min-h-screen bg-gradient-to-b from-purple-900 via-purple-600 to-purple-400">
+      <UserSync />
+      <Sidebar activeSection={activeSection} onSectionChange={setActiveSection} />
+      <main className="ml-64 pt-20 px-8 py-12">
+        <div className="max-w-6xl mx-auto">
+          {renderContent()}
         </div>
       </main>
     </div>
