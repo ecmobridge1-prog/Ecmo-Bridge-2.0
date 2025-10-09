@@ -290,3 +290,72 @@ export async function sendMessage(chatId: string, senderId: string, content: str
 
   return data;
 }
+
+// ============================================
+// PATIENT QUERIES
+// ============================================
+
+/**
+ * Create a new patient
+ * @param patientData - Patient data including name, special_care, type, latitude, longitude
+ * @returns The newly created patient
+ */
+export async function createPatient(patientData: {
+  name: string;
+  special_care: string;
+  type: string;
+  latitude: number;
+  longitude: number;
+}) {
+  const { data, error } = await supabase
+    .from('patients')
+    .insert([patientData])
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error creating patient:', error);
+    throw error;
+  }
+
+  return data;
+}
+
+/**
+ * Get all patients
+ * @returns Array of all patients
+ */
+export async function getAllPatients() {
+  const { data, error } = await supabase
+    .from('patients')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching patients:', error);
+    throw error;
+  }
+
+  return data;
+}
+
+/**
+ * Delete a patient by ID
+ * @param patientId - The patient's UUID
+ * @returns The deleted patient data
+ */
+export async function deletePatient(patientId: string) {
+  const { data, error } = await supabase
+    .from('patients')
+    .delete()
+    .eq('id', patientId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error deleting patient:', error);
+    throw error;
+  }
+
+  return data;
+}
