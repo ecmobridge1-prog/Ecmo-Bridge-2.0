@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { GoogleMap, LoadScript, Autocomplete, Marker } from "@react-google-maps/api";
 import { getAllPatients, createPatient, deletePatient } from "@/lib/queries";
 
+
+
 const mapContainerStyle = {
   width: "100%",
   height: "100%",
