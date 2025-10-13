@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 import Sidebar from "./_components/sidebar";
 import PatientsECMOs from "./_components/patients-ecmos";
 import MatchList from "./_components/match-list";
@@ -9,6 +11,48 @@ import UserSync from "./_components/user-sync";
 
 export default function Dashboard() {
   const [activeSection, setActiveSection] = useState("patients-ecmos");
+  const [isVerifying, setIsVerifying] = useState(true);
+  const router = useRouter();
+  const { user, isLoaded } = useUser();
+
+  useEffect(() => {
+    if (!isLoaded) return; // Wait for Clerk to load
+    
+    if (!user) {
+      // User is not authenticated, redirect to sign in
+      router.push('/sign-in');
+      return;
+    }
+
+    // Get the current user's ID for session storage key
+    const userId = user.id;
+    const sessionKey = `npi_verified_${userId}`;
+    const verifiedAtKey = `npi_verified_at_${userId}`;
+    
+    // Check if this specific user has verified NPI in this session
+    const npiVerified = sessionStorage.getItem(sessionKey);
+    const verifiedAt = sessionStorage.getItem(verifiedAtKey);
+    
+    if (!npiVerified || !verifiedAt) {
+      // No NPI verification found for this user, redirect to verification
+      router.push('/verify-npi');
+    } else {
+      // Optional: Check if verification is too old (e.g., 24 hours)
+      const verificationTime = new Date(verifiedAt).getTime();
+      const now = new Date().getTime();
+      const twentyFourHours = 24 * 60 * 60 * 1000;
+      
+      if (now - verificationTime > twentyFourHours) {
+        // Verification expired, clear and redirect
+        sessionStorage.removeItem(sessionKey);
+        sessionStorage.removeItem(verifiedAtKey);
+        router.push('/verify-npi');
+      } else {
+        // User is verified and verification is still valid
+        setIsVerifying(false);
+      }
+    }
+  }, [router, user, isLoaded]);
 
   const renderContent = () => {
     switch (activeSection) {
@@ -22,6 +66,18 @@ export default function Dashboard() {
         return <PatientsECMOs />;
     }
   };
+
+  // Show loading state while verifying NPI
+  if (isVerifying) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-purple-900 via-purple-600 to-purple-400 flex items-center justify-center">
+        <div className="text-white text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+          <p className="text-lg">Verifying access...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-900 via-purple-600 to-purple-400">
