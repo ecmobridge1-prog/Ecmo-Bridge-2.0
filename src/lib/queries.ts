@@ -91,6 +91,7 @@ export async function updateUserProfile(
   updates: {
     username?: string;
     full_name?: string;
+    has_ecmo_available?: boolean;
   }
 ) {
   const uuid = clerkIdToUuid(clerkUserId);
@@ -103,6 +104,33 @@ export async function updateUserProfile(
     .single();
 
   if (error) throw error;
+  return data;
+}
+
+/**
+ * Update user's ECMO availability status
+ * @param clerkUserId - The Clerk user ID
+ * @param hasEcmo - Whether the user has ECMO machines available
+ * @returns The updated profile
+ */
+export async function updateEcmoAvailability(
+  clerkUserId: string,
+  hasEcmo: boolean
+) {
+  const uuid = clerkIdToUuid(clerkUserId);
+  
+  const { data, error } = await supabase
+    .from('profiles')
+    .update({ has_ecmo_available: hasEcmo })
+    .eq('id', uuid)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error updating ECMO availability:', error);
+    throw error;
+  }
+  
   return data;
 }
 

@@ -1,11 +1,50 @@
 "use client";
 
+import { useState, useEffect } from 'react';
+import { useUser } from '@clerk/nextjs';
+import { getUserProfile, updateEcmoAvailability } from '@/lib/queries';
+
 interface SidebarProps {
   activeSection: string;
   onSectionChange: (section: string) => void;
 }
 
 export default function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
+  const { user } = useUser();
+  const [hasECMO, setHasECMO] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  // Load initial ECMO status from database
+  useEffect(() => {
+    async function loadEcmoStatus() {
+      if (user) {
+        try {
+          const profile = await getUserProfile(user.id);
+          setHasECMO(profile.has_ecmo_available || false);
+        } catch (error) {
+          console.error('Error loading ECMO status:', error);
+        }
+      }
+    }
+    loadEcmoStatus();
+  }, [user]);
+
+  const handleEcmoToggle = async () => {
+    if (!user) return;
+    
+    const newValue = !hasECMO;
+    setLoading(true);
+    
+    try {
+      await updateEcmoAvailability(user.id, newValue);
+      setHasECMO(newValue);
+    } catch (error) {
+      console.error('Error updating ECMO availability:', error);
+      // Optionally show error message to user
+    } finally {
+      setLoading(false);
+    }
+  };
   const sections = [
     { 
       id: 'patients-ecmos', 
@@ -40,6 +79,64 @@ export default function Sidebar({ activeSection, onSectionChange }: SidebarProps
     <div className="w-64 bg-white/95 backdrop-blur-sm shadow-lg min-h-screen pt-20 fixed left-0 top-0">
       <div className="p-6">
         <h2 className="text-xl font-bold text-gray-800 mb-6">Dashboard</h2>
+        
+        {/* ECMO Status Section */}
+        <div className="mb-6 pb-6 border-b border-gray-200">
+          {/* Instructions */}
+          <div className="mb-4">
+            <p className="text-xs text-gray-600 mb-3">
+              Toggle if your hospital has ECMO machines available.
+            </p>
+          </div>
+          
+          {/* ECMO Status Card */}
+          <div 
+            className={`p-3 rounded-lg border-2 transition-all duration-300 ${
+              hasECMO 
+                ? 'bg-emerald-50 border-emerald-500' 
+                : 'bg-gray-50 border-gray-300'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <span className="text-xl">🏥</span>
+                <span className={`text-sm font-medium ${
+                  hasECMO ? 'text-emerald-700' : 'text-gray-600'
+                }`}>
+                  ECMO Available
+                </span>
+              </div>
+              
+              {/* Toggle Switch */}
+              <button
+                onClick={handleEcmoToggle}
+                disabled={loading}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                  hasECMO 
+                    ? 'bg-emerald-600 focus:ring-emerald-500' 
+                    : 'bg-gray-400 focus:ring-gray-300'
+                } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                role="switch"
+                aria-checked={hasECMO}
+                aria-label="Toggle ECMO availability"
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${
+                    hasECMO ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+            
+            {/* Status Text */}
+            <p className={`mt-2 text-xs ${
+              hasECMO ? 'text-emerald-600' : 'text-gray-500'
+            }`}>
+              {hasECMO ? 'Your hospital has ECMO machines' : 'No ECMO machines available'}
+            </p>
+          </div>
+        </div>
+        
         <nav className="space-y-2">
           {sections.map((section) => (
             <button
