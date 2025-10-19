@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { supabase } from '@/lib/db';
-import { getUserNotifications } from '@/lib/queries';
+import { getUserNotifications, clearUserNotifications } from '@/lib/queries';
 import { clerkIdToUuid } from '@/lib/utils';
 
 interface Notification {
@@ -40,6 +40,7 @@ export default function NotificationBell() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [isShaking, setIsShaking] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const { user } = useUser();
@@ -138,6 +139,25 @@ export default function NotificationBell() {
     setIsOpen(!isOpen);
   };
 
+  const handleClearAll = async () => {
+    if (!user || isClearing) return;
+    
+    if (!confirm('Are you sure you want to clear all notifications?')) {
+      return;
+    }
+    
+    try {
+      setIsClearing(true);
+      await clearUserNotifications(user.id);
+      setNotifications([]);
+    } catch (error) {
+      console.error('Error clearing notifications:', error);
+      alert('Failed to clear notifications. Please try again.');
+    } finally {
+      setIsClearing(false);
+    }
+  };
+
   return (
     <div className="relative">
       {/* Bell Icon Button */}
@@ -179,13 +199,24 @@ export default function NotificationBell() {
           className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50 animate-in fade-in slide-in-from-top-2 duration-200"
         >
           {/* Header */}
-          <div className="px-4 py-3 border-b border-gray-200">
+          <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-800">
               Notifications
               <span className="ml-2 text-sm font-normal text-gray-500">
                 ({notifications.length})
               </span>
             </h3>
+            
+            {/* Clear All Button - only show if there are notifications */}
+            {notifications.length > 0 && (
+              <button
+                onClick={handleClearAll}
+                disabled={isClearing}
+                className="text-xs text-purple-600 hover:text-purple-800 font-medium transition-colors px-2 py-1 rounded hover:bg-purple-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isClearing ? 'Clearing...' : 'Clear All'}
+              </button>
+            )}
           </div>
 
           {/* Notification List */}

@@ -21,19 +21,19 @@ const libraries: ("places")[] = ["places"];
 interface Patient {
   id: string;
   name: string;
-  firstName?: string;
-  middleName?: string;
-  lastName?: string;
+  first_name?: string;
+  middle_name?: string;
+  last_name?: string;
   dob?: string;
   mrn?: string;
   insurance?: string;
   weight?: number;
-  bloodPressure?: string;
+  blood_pressure?: string;
   pulse?: number;
   temperature?: number;
-  respirationRate?: number;
-  pulseOximetry?: number;
-  failureType?: string;
+  respiration_rate?: number;
+  pulse_oximetry?: number;
+  failure_type?: string;
   notes?: string;
   special_care: string;
   type: string;
@@ -53,6 +53,8 @@ export default function PatientsECMOs() {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -114,7 +116,22 @@ export default function PatientsECMOs() {
         special_care: formData.specialCare,
         type: formData.type,
         latitude: selectedLocation.lat,
-        longitude: selectedLocation.lng
+        longitude: selectedLocation.lng,
+        // Add all new fields
+        first_name: formData.firstName || undefined,
+        middle_name: formData.middleName || undefined,
+        last_name: formData.lastName || undefined,
+        dob: formData.dob || undefined,
+        mrn: formData.mrn || undefined,
+        insurance: formData.insurance || undefined,
+        weight: formData.weight ? parseFloat(formData.weight) : undefined,
+        blood_pressure: formData.bloodPressure || undefined,
+        pulse: formData.pulse ? parseInt(formData.pulse) : undefined,
+        temperature: formData.temperature ? parseFloat(formData.temperature) : undefined,
+        respiration_rate: formData.respirationRate ? parseInt(formData.respirationRate) : undefined,
+        pulse_oximetry: formData.pulseOximetry ? parseFloat(formData.pulseOximetry) : undefined,
+        failure_type: formData.failureType || undefined,
+        notes: formData.notes || undefined,
       });
 
       // Reset form and close modal
@@ -197,94 +214,68 @@ export default function PatientsECMOs() {
               <h3 className="text-xl font-semibold text-gray-800">Patient List</h3>
             </div>
 
-            <div className="flex-1 overflow-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50 sticky top-0">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Name
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      DOB
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      MRN
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Care Type
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      ECMO Type
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Vitals
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {loading ? (
-                    <tr>
-                      <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
-                        Loading patients...
-                      </td>
-                    </tr>
-                  ) : patients.length === 0 ? (
-                    <tr>
-                      <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
-                        No patients found. Add your first patient using the button above.
-                      </td>
-                    </tr>
-                  ) : (
-                    patients.map((patient, index) => (
-                      <tr
-                        key={patient.id}
-                        className={`hover:bg-purple-50 transition-colors ${
-                          index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
-                        }`}
+            <div className="flex-1 overflow-auto p-4">
+              {loading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-3"></div>
+                    <p className="text-gray-500">Loading patients...</p>
+                  </div>
+                </div>
+              ) : patients.length === 0 ? (
+                <div className="text-center py-12">
+                  <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  <p className="text-gray-500 text-lg">No patients found</p>
+                  <p className="text-gray-400 text-sm mt-1">Add your first patient using the button above</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {patients.map((patient) => (
+                    <div
+                      key={patient.id}
+                      onClick={() => {
+                        setSelectedPatient(patient);
+                        setIsDetailModalOpen(true);
+                      }}
+                      className="relative bg-white border-2 border-gray-200 rounded-lg p-4 hover:border-purple-400 hover:shadow-md transition-all cursor-pointer group"
+                    >
+                      {/* Delete button - top right */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeletePatient(patient.id, patient.name);
+                        }}
+                        className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-full hover:bg-red-100"
+                        title="Delete patient"
                       >
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">{patient.name}</div>
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <div className="text-xs text-gray-600">{patient.dob || '-'}</div>
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <div className="text-xs text-gray-600">{patient.mrn || '-'}</div>
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <div className="text-xs text-gray-600">{patient.special_care}</div>
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                        <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+
+                      {/* Patient info */}
+                      <div className="pr-8">
+                        <h4 className="text-lg font-semibold text-gray-900 mb-2">{patient.name}</h4>
+                        <div className="flex items-center gap-3 flex-wrap">
+                          <span className="px-3 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">
                             {patient.type}
                           </span>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="text-xs text-gray-600 space-y-1">
-                            {patient.pulse && <div>Pulse: {patient.pulse} bpm</div>}
-                            {patient.bloodPressure && <div>BP: {patient.bloodPressure}</div>}
-                            {patient.temperature && <div>Temp: {patient.temperature}°F</div>}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <button
-                            onClick={() => handleDeletePatient(patient.id, patient.name)}
-                            className="text-red-600 hover:text-red-900 transition-colors"
-                            title="Delete patient"
-                          >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                          <span className="text-sm text-gray-600">
+                            {patient.special_care}
+                          </span>
+                          {patient.dob && (
+                            <span className="text-sm text-gray-500">
+                              DOB: {patient.dob}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
@@ -592,6 +583,164 @@ export default function PatientsECMOs() {
                     className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg transition-colors font-medium"
                   >
                     {submitting ? 'Sending...' : 'Send Request'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Patient Detail Modal */}
+        {isDetailModalOpen && selectedPatient && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <div className="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto relative">
+              {/* Close button */}
+              <button
+                onClick={() => {
+                  setIsDetailModalOpen(false);
+                  setSelectedPatient(null);
+                }}
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors z-10"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+
+              {/* Header */}
+              <div className="bg-gradient-to-r from-purple-600 to-purple-800 text-white p-6 rounded-t-xl">
+                <h2 className="text-2xl font-bold mb-2">{selectedPatient.name}</h2>
+                <div className="flex items-center gap-3">
+                  <span className="px-3 py-1 bg-white/20 rounded-full text-sm font-medium">
+                    {selectedPatient.type}
+                  </span>
+                  <span className="text-purple-100">{selectedPatient.special_care}</span>
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="p-6 space-y-6">
+                {/* Demographics */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                    <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    Demographics
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
+                    <div>
+                      <p className="text-xs text-gray-500 uppercase tracking-wide">Date of Birth</p>
+                      <p className="text-sm font-medium text-gray-900">{selectedPatient.dob || 'Not provided'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 uppercase tracking-wide">Medical Record Number</p>
+                      <p className="text-sm font-medium text-gray-900">{selectedPatient.mrn || 'Not provided'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 uppercase tracking-wide">Insurance</p>
+                      <p className="text-sm font-medium text-gray-900">{selectedPatient.insurance || 'Not provided'}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Vitals */}
+                {(selectedPatient.weight || selectedPatient.blood_pressure || selectedPatient.pulse || 
+                  selectedPatient.temperature || selectedPatient.respiration_rate || selectedPatient.pulse_oximetry) && (
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                      <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      </svg>
+                      Vital Signs
+                    </h3>
+                    <div className="grid grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg">
+                      {selectedPatient.weight && (
+                        <div>
+                          <p className="text-xs text-gray-500 uppercase tracking-wide">Weight</p>
+                          <p className="text-sm font-medium text-gray-900">{selectedPatient.weight} lbs</p>
+                        </div>
+                      )}
+                      {selectedPatient.blood_pressure && (
+                        <div>
+                          <p className="text-xs text-gray-500 uppercase tracking-wide">Blood Pressure</p>
+                          <p className="text-sm font-medium text-gray-900">{selectedPatient.blood_pressure}</p>
+                        </div>
+                      )}
+                      {selectedPatient.pulse && (
+                        <div>
+                          <p className="text-xs text-gray-500 uppercase tracking-wide">Pulse</p>
+                          <p className="text-sm font-medium text-gray-900">{selectedPatient.pulse} bpm</p>
+                        </div>
+                      )}
+                      {selectedPatient.temperature && (
+                        <div>
+                          <p className="text-xs text-gray-500 uppercase tracking-wide">Temperature</p>
+                          <p className="text-sm font-medium text-gray-900">{selectedPatient.temperature}°F</p>
+                        </div>
+                      )}
+                      {selectedPatient.respiration_rate && (
+                        <div>
+                          <p className="text-xs text-gray-500 uppercase tracking-wide">Respiration Rate</p>
+                          <p className="text-sm font-medium text-gray-900">{selectedPatient.respiration_rate}/min</p>
+                        </div>
+                      )}
+                      {selectedPatient.pulse_oximetry && (
+                        <div>
+                          <p className="text-xs text-gray-500 uppercase tracking-wide">Pulse Oximetry</p>
+                          <p className="text-sm font-medium text-gray-900">{selectedPatient.pulse_oximetry}%</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Medical Information */}
+                {(selectedPatient.failure_type || selectedPatient.notes) && (
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                      <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      Medical Information
+                    </h3>
+                    <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+                      {selectedPatient.failure_type && (
+                        <div>
+                          <p className="text-xs text-gray-500 uppercase tracking-wide">Failure Type</p>
+                          <p className="text-sm font-medium text-gray-900">{selectedPatient.failure_type}</p>
+                        </div>
+                      )}
+                      {selectedPatient.notes && (
+                        <div>
+                          <p className="text-xs text-gray-500 uppercase tracking-wide">Notes</p>
+                          <p className="text-sm text-gray-700 whitespace-pre-wrap">{selectedPatient.notes}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Actions */}
+                <div className="flex gap-3 pt-4 border-t border-gray-200">
+                  <button
+                    onClick={() => {
+                      setIsDetailModalOpen(false);
+                      setSelectedPatient(null);
+                    }}
+                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                  >
+                    Close
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleDeletePatient(selectedPatient.id, selectedPatient.name);
+                      setIsDetailModalOpen(false);
+                      setSelectedPatient(null);
+                    }}
+                    className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-medium"
+                  >
+                    Delete Patient
                   </button>
                 </div>
               </div>
