@@ -1,40 +1,116 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
+import { useUser } from '@clerk/nextjs';
+import { supabase } from '@/lib/db';
+import { getUserNotifications } from '@/lib/queries';
+import { clerkIdToUuid } from '@/lib/utils';
 
 interface Notification {
-  id: number;
-  patientName: string;
-  doctorEmail: string;
-  timestamp: string;
+  id: string;
+  message: string;
+  created_at: string;
+  patients: {
+    name: string;
+  }[] | null;
 }
 
-const mockNotifications: Notification[] = [
-  {
-    id: 1,
-    patientName: "John Doe",
-    doctorEmail: "dr.smith@hospital.edu",
-    timestamp: "5 minutes ago"
-  },
-  {
-    id: 2,
-    patientName: "Jane Smith",
-    doctorEmail: "dr.jones@medical.edu",
-    timestamp: "1 hour ago"
-  },
-  {
-    id: 3,
-    patientName: "Robert Johnson",
-    doctorEmail: "dr.williams@clinic.edu",
-    timestamp: "2 hours ago"
+// Helper function to format relative time
+function formatRelativeTime(dateString: string): string {
+  const now = new Date();
+  const notificationDate = new Date(dateString);
+  const diffInSeconds = Math.floor((now.getTime() - notificationDate.getTime()) / 1000);
+
+  if (diffInSeconds < 60) {
+    return 'Just now';
+  } else if (diffInSeconds < 3600) {
+    const minutes = Math.floor(diffInSeconds / 60);
+    return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+  } else if (diffInSeconds < 86400) {
+    const hours = Math.floor(diffInSeconds / 3600);
+    return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+  } else {
+    const days = Math.floor(diffInSeconds / 86400);
+    return `${days} day${days > 1 ? 's' : ''} ago`;
   }
-];
+}
 
 export default function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
-  const [notifications] = useState<Notification[]>(mockNotifications);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isShaking, setIsShaking] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const { user } = useUser();
+
+  // Function to play notification sound and trigger animation
+  const playNotificationSound = () => {
+    try {
+      const audio = new Audio('/sound_effect.mp3');
+      audio.volume = 0.5; // Set to 50% volume
+      audio.play().catch(err => {
+        console.log('Audio play failed:', err);
+      });
+      
+      // Trigger shake animation
+      setIsShaking(true);
+      setTimeout(() => setIsShaking(false), 600); // Animation duration
+    } catch (error) {
+      console.error('Error playing notification sound:', error);
+    }
+  };
+
+  // Fetch notifications on mount
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchNotifications = async () => {
+      try {
+        setLoading(true);
+        const data = await getUserNotifications(user.id);
+        setNotifications(data || []);
+      } catch (error) {
+        console.error('Error fetching notifications:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchNotifications();
+  }, [user]);
+
+  // Set up real-time subscription
+  useEffect(() => {
+    if (!user) return;
+
+    const userId = clerkIdToUuid(user.id);
+    
+    const channel = supabase
+      .channel('notifications')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${userId}`
+        },
+        (payload) => {
+          console.log('New notification received:', payload);
+          const newNotification = payload.new as Notification;
+          setNotifications(prev => [newNotification, ...prev]);
+          
+          // Play notification sound
+          playNotificationSound();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
 
   // Click outside to close dropdown
   useEffect(() => {
@@ -68,7 +144,9 @@ export default function NotificationBell() {
       <button
         ref={buttonRef}
         onClick={toggleDropdown}
-        className="relative p-2 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white/50"
+        className={`relative p-2 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white/50 ${
+          isShaking ? 'animate-bounce' : ''
+        }`}
         aria-label="Notifications"
       >
         {/* Bell Icon */}
@@ -112,7 +190,13 @@ export default function NotificationBell() {
 
           {/* Notification List */}
           <div className="max-h-96 overflow-y-auto">
-            {notifications.length > 0 ? (
+            {loading ? (
+              // Loading State
+              <div className="px-4 py-8 text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-3"></div>
+                <p className="text-gray-500 text-sm">Loading notifications...</p>
+              </div>
+            ) : notifications.length > 0 ? (
               notifications.map((notification) => (
                 <div
                   key={notification.id}
@@ -144,13 +228,13 @@ export default function NotificationBell() {
                         🔔 New Patient Added
                       </p>
                       <p className="text-sm text-gray-700 mb-1">
-                        <span className="font-medium">Patient:</span> {notification.patientName}
+                        <span className="font-medium">Patient:</span> {notification.patients?.[0]?.name || 'Unknown Patient'}
                       </p>
                       <p className="text-sm text-gray-600 mb-1">
-                        <span className="font-medium">Added by:</span> {notification.doctorEmail}
+                        {notification.message}
                       </p>
                       <p className="text-xs text-gray-500">
-                        {notification.timestamp}
+                        {formatRelativeTime(notification.created_at)}
                       </p>
                     </div>
                   </div>

@@ -387,3 +387,36 @@ export async function deletePatient(patientId: string) {
 
   return data;
 }
+
+// ============================================
+// NOTIFICATION QUERIES
+// ============================================
+
+/**
+ * Get all notifications for a user
+ * @param clerkUserId - The Clerk user ID
+ * @returns Array of notifications ordered by newest first
+ */
+export async function getUserNotifications(clerkUserId: string) {
+  const uuid = clerkIdToUuid(clerkUserId);
+  
+  const { data, error } = await supabase
+    .from('notifications')
+    .select(`
+      id,
+      message,
+      created_at,
+      patients!patient_id (
+        name
+      )
+    `)
+    .eq('user_id', uuid)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching user notifications:', error);
+    throw error;
+  }
+
+  return data;
+}
