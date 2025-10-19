@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { useState, useEffect } from "react";
 import { GoogleMap, LoadScript, Autocomplete, Marker } from "@react-google-maps/api";
 import { getAllPatients, createPatient, deletePatient } from "@/lib/queries";
@@ -21,6 +22,20 @@ const libraries: ("places")[] = ["places"];
 interface Patient {
   id: string;
   name: string;
+  firstName?: string;
+  middleName?: string;
+  lastName?: string;
+  dob?: string;
+  mrn?: string;
+  insurance?: string;
+  weight?: number;
+  bloodPressure?: string;
+  pulse?: number;
+  temperature?: number;
+  respirationRate?: number;
+  pulseOximetry?: number;
+  failureType?: string;
+  notes?: string;
   special_care: string;
   type: string;
   latitude: number;
@@ -39,10 +54,23 @@ export default function PatientsECMOs() {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  
+
   // Form state
   const [formData, setFormData] = useState({
-    name: '',
+    firstName: '',
+    middleName: '',
+    lastName: '',
+    dob: '',
+    mrn: '',
+    insurance: '',
+    weight: '',
+    bloodPressure: '',
+    pulse: '',
+    temperature: '',
+    respirationRate: '',
+    pulseOximetry: '',
+    failureType: '',
+    notes: '',
     specialCare: '',
     type: ''
   });
@@ -65,26 +93,53 @@ export default function PatientsECMOs() {
   };
 
   const handleFormSubmit = async () => {
-    if (!formData.name || !formData.specialCare || !formData.type || !selectedLocation) {
-      alert('Please fill in all fields and select a location');
+    // Combine name fields
+    const fullName = `${formData.firstName} ${formData.middleName} ${formData.lastName}`.trim();
+
+    if (!fullName || !formData.specialCare || !formData.type || !selectedLocation) {
+      alert('Please fill in all required fields and select a location');
       return;
     }
 
     try {
       setSubmitting(true);
+
+      // Log new fields for testing (not yet in database)
+      console.log('New patient data:', {
+        ...formData,
+        name: fullName
+      });
+
       await createPatient({
-        name: formData.name,
+        name: fullName,
         special_care: formData.specialCare,
         type: formData.type,
         latitude: selectedLocation.lat,
         longitude: selectedLocation.lng
       });
-      
+
       // Reset form and close modal
-      setFormData({ name: '', specialCare: '', type: '' });
+      setFormData({
+        firstName: '',
+        middleName: '',
+        lastName: '',
+        dob: '',
+        mrn: '',
+        insurance: '',
+        weight: '',
+        bloodPressure: '',
+        pulse: '',
+        temperature: '',
+        respirationRate: '',
+        pulseOximetry: '',
+        failureType: '',
+        notes: '',
+        specialCare: '',
+        type: ''
+      });
       setSelectedLocation(null);
       setIsModalOpen(false);
-      
+
       // Refresh patients list
       await fetchPatients();
     } catch (error) {
@@ -115,7 +170,7 @@ export default function PatientsECMOs() {
   };
 
   return (
-    <LoadScript 
+    <LoadScript
       googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""}
       libraries={libraries}
     >
@@ -140,21 +195,30 @@ export default function PatientsECMOs() {
             <div className="p-6 border-b border-gray-200">
               <h3 className="text-xl font-semibold text-gray-800">Patient List</h3>
             </div>
-            
+
             <div className="flex-1 overflow-auto">
-              <table className="w-full">
+              <table className="w-full text-sm">
                 <thead className="bg-gray-50 sticky top-0">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Name
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Special Care
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      DOB
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Type
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      MRN
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Care Type
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      ECMO Type
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Vitals
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
@@ -162,13 +226,13 @@ export default function PatientsECMOs() {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {loading ? (
                     <tr>
-                      <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
+                      <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
                         Loading patients...
                       </td>
                     </tr>
                   ) : patients.length === 0 ? (
                     <tr>
-                      <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
+                      <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
                         No patients found. Add your first patient using the button above.
                       </td>
                     </tr>
@@ -180,18 +244,31 @@ export default function PatientsECMOs() {
                           index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
                         }`}
                       >
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-4 py-3 whitespace-nowrap">
                           <div className="text-sm font-medium text-gray-900">{patient.name}</div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-600">{patient.special_care}</div>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <div className="text-xs text-gray-600">{patient.dob || '-'}</div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <div className="text-xs text-gray-600">{patient.mrn || '-'}</div>
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <div className="text-xs text-gray-600">{patient.special_care}</div>
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
                           <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
                             {patient.type}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-4 py-3">
+                          <div className="text-xs text-gray-600 space-y-1">
+                            {patient.pulse && <div>Pulse: {patient.pulse} bpm</div>}
+                            {patient.bloodPressure && <div>BP: {patient.bloodPressure}</div>}
+                            {patient.temperature && <div>Temp: {patient.temperature}°F</div>}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
                           <button
                             onClick={() => handleDeletePatient(patient.id, patient.name)}
                             className="text-red-600 hover:text-red-900 transition-colors"
@@ -215,7 +292,7 @@ export default function PatientsECMOs() {
             <div className="p-6 border-b border-gray-200">
               <h3 className="text-xl font-semibold text-gray-800">Patient Locations</h3>
             </div>
-            
+
             <div className="flex-1">
               <GoogleMap
                 mapContainerStyle={mapContainerStyle}
@@ -249,10 +326,10 @@ export default function PatientsECMOs() {
           </div>
         </div>
 
-        {/* Add Patient Modal */}
+        {/* Patient Intake Request Form Modal */}
         {isModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-            <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 relative">
+            <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full p-8 relative border-2 border-blue-300">
               {/* Close button */}
               <button
                 onClick={() => setIsModalOpen(false)}
@@ -263,59 +340,204 @@ export default function PatientsECMOs() {
                 </svg>
               </button>
 
-              {/* Modal Header */}
-              <h3 className="text-2xl font-semibold text-gray-800 mb-6">
-                Add New Patient
-              </h3>
+              {/* Form Container */}
+              <div className="bg-gray-100 rounded-lg p-6">
+                {/* Header */}
+                <h3 className="text-2xl font-semibold text-blue-800 text-center mb-8">
+                  Patient Intake Request Form
+                </h3>
 
-              {/* Form Fields */}
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Patient Name
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Enter patient name..."
-                    value={formData.name}
-                    onChange={(e) => handleInputChange('name', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-                  />
+                {/* Top Section - Patient Identification */}
+                <div className="grid grid-cols-6 gap-4 mb-6">
+                  {/* Name Fields */}
+                  <div className="col-span-3">
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <input
+                          type="text"
+                          placeholder="First Name"
+                          value={formData.firstName}
+                          onChange={(e) => handleInputChange('firstName', e.target.value)}
+                          className="w-full px-3 py-2 bg-white border border-blue-400 rounded text-sm text-black"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <input
+                          type="text"
+                          placeholder="Middle Name"
+                          value={formData.middleName}
+                          onChange={(e) => handleInputChange('middleName', e.target.value)}
+                          className="w-full px-3 py-2 bg-white border border-blue-400 rounded text-sm text-black"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <input
+                          type="text"
+                          placeholder="Last Name"
+                          value={formData.lastName}
+                          onChange={(e) => handleInputChange('lastName', e.target.value)}
+                          className="w-full px-3 py-2 bg-white border border-blue-400 rounded text-sm text-black"
+                        />
+                      </div>
+                    </div>
+                    <label className="block text-sm text-gray-700 mt-1">Name</label>
+                  </div>
+
+                  {/* DOB */}
+                  <div className="col-span-1">
+                    <input
+                      type="text"
+                      placeholder="mm/dd/year"
+                      value={formData.dob}
+                      onChange={(e) => handleInputChange('dob', e.target.value)}
+                      className="w-full px-3 py-2 bg-white border border-blue-400 rounded text-sm text-black"
+                    />
+                    <label className="block text-sm text-gray-700 mt-1">DOB</label>
+                  </div>
+
+                  {/* MRN */}
+                  <div className="col-span-1">
+                    <input
+                      type="text"
+                      placeholder="Medical Record #"
+                      value={formData.mrn}
+                      onChange={(e) => handleInputChange('mrn', e.target.value)}
+                      className="w-full px-3 py-2 bg-white border border-blue-400 rounded text-sm text-black"
+                    />
+                    <label className="block text-sm text-gray-700 mt-1">MRN</label>
+                  </div>
+
+                  {/* Insurance */}
+                  <div className="col-span-1">
+                    <input
+                      type="text"
+                      placeholder="Insurance Provider"
+                      value={formData.insurance}
+                      onChange={(e) => handleInputChange('insurance', e.target.value)}
+                      className="w-full px-3 py-2 bg-white border border-blue-400 rounded text-sm text-black"
+                    />
+                    <label className="block text-sm text-gray-700 mt-1">Insurance</label>
+                  </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Special Care
-                  </label>
-                  <select 
-                    value={formData.specialCare}
-                    onChange={(e) => handleInputChange('specialCare', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-                  >
-                    <option value="">Select care type...</option>
-                    <option value="ICU">ICU</option>
-                    <option value="CCU">CCU</option>
-                    <option value="General Ward">General Ward</option>
-                    <option value="Emergency">Emergency</option>
-                  </select>
+                {/* Middle Section - Vitals */}
+                <div className="grid grid-cols-2 gap-8 mb-6">
+                  {/* Left Column */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                      <label className="text-sm text-gray-700 w-20">Weight</label>
+                      <input
+                        type="text"
+                        placeholder="lbs"
+                        value={formData.weight}
+                        onChange={(e) => handleInputChange('weight', e.target.value)}
+                        className="flex-1 px-3 py-2 bg-white border border-blue-400 rounded text-sm text-black"
+                      />
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <label className="text-sm text-gray-700 w-20">Blood Pressure</label>
+                      <input
+                        type="text"
+                        placeholder="120/80"
+                        value={formData.bloodPressure}
+                        onChange={(e) => handleInputChange('bloodPressure', e.target.value)}
+                        className="flex-1 px-3 py-2 bg-white border border-blue-400 rounded text-sm text-black"
+                      />
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <label className="text-sm text-gray-700 w-20">Temperature (F)</label>
+                      <input
+                        type="text"
+                        placeholder="98.6"
+                        value={formData.temperature}
+                        onChange={(e) => handleInputChange('temperature', e.target.value)}
+                        className="flex-1 px-3 py-2 bg-white border border-blue-400 rounded text-sm text-black"
+                      />
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <label className="text-sm text-gray-700 w-20">Failure type</label>
+                      <input
+                        type="text"
+                        placeholder="Respiratory/Cardiac"
+                        value={formData.failureType}
+                        onChange={(e) => handleInputChange('failureType', e.target.value)}
+                        className="flex-1 px-3 py-2 bg-white border border-blue-400 rounded text-sm text-black"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Right Column */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                      <label className="text-sm text-gray-700 w-20">Pulse</label>
+                      <input
+                        type="text"
+                        placeholder="bpm"
+                        value={formData.pulse}
+                        onChange={(e) => handleInputChange('pulse', e.target.value)}
+                        className="flex-1 px-3 py-2 bg-white border border-blue-400 rounded text-sm text-black"
+                      />
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <label className="text-sm text-gray-700 w-20">Respiration rate</label>
+                      <input
+                        type="text"
+                        placeholder="respirations per minute"
+                        value={formData.respirationRate}
+                        onChange={(e) => handleInputChange('respirationRate', e.target.value)}
+                        className="flex-1 px-3 py-2 bg-white border border-blue-400 rounded text-sm text-black"
+                      />
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <label className="text-sm text-gray-700 w-20">Pulse oximetry</label>
+                      <input
+                        type="text"
+                        placeholder="%"
+                        value={formData.pulseOximetry}
+                        onChange={(e) => handleInputChange('pulseOximetry', e.target.value)}
+                        className="flex-1 px-3 py-2 bg-white border border-blue-400 rounded text-sm text-black"
+                      />
+                    </div>
+                  </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    ECMO Type
-                  </label>
-                  <select 
-                    value={formData.type}
-                    onChange={(e) => handleInputChange('type', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-                  >
-                    <option value="">Select ECMO type...</option>
-                    <option value="VA ECMO">VA ECMO</option>
-                    <option value="VV ECMO">VV ECMO</option>
-                  </select>
+                {/* Existing Fields */}
+                <div className="grid grid-cols-2 gap-6 mb-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Special Care
+                    </label>
+                    <select
+                      value={formData.specialCare}
+                      onChange={(e) => handleInputChange('specialCare', e.target.value)}
+                      className="w-full px-4 py-2 bg-white border border-blue-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-black"
+                    >
+                      <option value="">Select care type...</option>
+                      <option value="ICU">ICU</option>
+                      <option value="CCU">CCU</option>
+                      <option value="General Ward">General Ward</option>
+                      <option value="Emergency">Emergency</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      ECMO Type
+                    </label>
+                    <select
+                      value={formData.type}
+                      onChange={(e) => handleInputChange('type', e.target.value)}
+                      className="w-full px-4 py-2 bg-white border border-blue-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-black"
+                    >
+                      <option value="">Select ECMO type...</option>
+                      <option value="VA ECMO">VA ECMO</option>
+                      <option value="VV ECMO">VV ECMO</option>
+                    </select>
+                  </div>
                 </div>
 
-                <div>
+                {/* Location */}
+                <div className="mb-6">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Location
                   </label>
@@ -337,7 +559,7 @@ export default function PatientsECMOs() {
                     <input
                       type="text"
                       placeholder="Search for an address..."
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                      className="w-full px-4 py-2 bg-white border border-blue-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-black"
                     />
                   </Autocomplete>
                   {selectedLocation && (
@@ -346,23 +568,31 @@ export default function PatientsECMOs() {
                     </p>
                   )}
                 </div>
-              </div>
 
-              {/* Action Buttons */}
-              <div className="flex gap-3 mt-6">
-                <button
-                  onClick={() => setIsModalOpen(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleFormSubmit}
-                  disabled={submitting}
-                  className="flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white rounded-lg transition-colors font-medium"
-                >
-                  {submitting ? 'Adding...' : 'Add Patient'}
-                </button>
+                {/* Notes */}
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Notes
+                  </label>
+                  <textarea
+                    placeholder="Additional notes about the patient..."
+                    value={formData.notes}
+                    onChange={(e) => handleInputChange('notes', e.target.value)}
+                    rows={4}
+                    className="w-full px-4 py-2 bg-white border border-blue-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none text-black"
+                  />
+                </div>
+
+                {/* Action Button */}
+                <div className="flex justify-end">
+                  <button
+                    onClick={handleFormSubmit}
+                    disabled={submitting}
+                    className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg transition-colors font-medium"
+                  >
+                    {submitting ? 'Sending...' : 'Send Request'}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
