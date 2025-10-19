@@ -144,7 +144,7 @@ export default function NotificationBell() {
       <button
         ref={buttonRef}
         onClick={toggleDropdown}
-        className={`relative p-2 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white/50 ${
+        className={`relative p-2 rounded-full bg-transparent hover:bg-white/20 transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white/50 ${
           isShaking ? 'animate-bounce' : ''
         }`}
         aria-label="Notifications"

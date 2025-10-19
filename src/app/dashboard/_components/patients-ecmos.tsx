@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { GoogleMap, LoadScript, Autocomplete, Marker } from "@react-google-maps/api";
 import { getAllPatients, createPatient, deletePatient } from "@/lib/queries";
+import NotificationBell from "./notification-bell";
 
 const mapContainerStyle = {
   width: "100%",
@@ -118,8 +119,10 @@ export default function PatientsECMOs() {
       libraries={libraries}
     >
       <div className="space-y-6">
-        {/* Add Patient Button */}
-        <div className="flex justify-end items-center">
+        {/* Notification Bell and Add Patient Button */}
+        <div className="flex justify-end items-center gap-3">
+          <NotificationBell />
+          
           <button
             onClick={() => setIsModalOpen(true)}
             className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-medium flex items-center gap-2"

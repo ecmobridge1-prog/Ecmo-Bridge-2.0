@@ -8,7 +8,6 @@ import PatientsECMOs from "./_components/patients-ecmos";
 import MatchList from "./_components/match-list";
 import Chat from "./_components/chat";
 import UserSync from "./_components/user-sync";
-import NotificationBell from "./_components/notification-bell";
 
 export default function Dashboard() {
   const [activeSection, setActiveSection] = useState("patients-ecmos");
@@ -97,12 +96,6 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gradient-to-b from-purple-900 via-purple-600 to-purple-400">
       <UserSync />
       <Sidebar activeSection={activeSection} onSectionChange={setActiveSection} />
-      
-      {/* Notification Bell - Top Right */}
-      <div className="fixed top-6 right-8 z-50">
-        <NotificationBell />
-      </div>
-      
       <main className="ml-64 pt-20 px-8 py-12">
         <div className="max-w-6xl mx-auto">
           {renderContent()}
