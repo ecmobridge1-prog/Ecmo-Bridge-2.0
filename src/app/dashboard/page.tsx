@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import Sidebar from "./_components/sidebar";
 import PatientsECMOs from "./_components/patients-ecmos";
-import MatchList from "./_components/match-list";
 import Chat from "./_components/chat";
 import UserSync from "./_components/user-sync";
 
@@ -71,8 +70,6 @@ export default function Dashboard() {
     switch (activeSection) {
       case "patients-ecmos":
         return <PatientsECMOs />;
-      case "match-list":
-        return <MatchList />;
       case "chat":
         return <Chat />;
       default:
