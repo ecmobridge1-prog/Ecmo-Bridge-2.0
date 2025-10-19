@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 
@@ -19,6 +19,22 @@ export default function VerifyNPI() {
   const [showSuccess, setShowSuccess] = useState(false);
   const router = useRouter();
   const { user } = useUser();
+
+  // Auto-redirect .edu emails to dashboard
+  useEffect(() => {
+    if (user) {
+      const userEmail = user.primaryEmailAddress?.emailAddress;
+      const isEduEmail = userEmail?.toLowerCase().endsWith('.edu');
+      
+      if (isEduEmail) {
+        // Auto-verify for .edu emails
+        const userId = user.id;
+        sessionStorage.setItem(`npi_verified_${userId}`, 'true');
+        sessionStorage.setItem(`npi_verified_at_${userId}`, new Date().toISOString());
+        router.push('/dashboard');
+      }
+    }
+  }, [user, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

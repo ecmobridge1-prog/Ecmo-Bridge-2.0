@@ -24,8 +24,21 @@ export default function Dashboard() {
       return;
     }
 
-    // Get the current user's ID for session storage key
     const userId = user.id;
+    const userEmail = user.primaryEmailAddress?.emailAddress;
+    const isEduEmail = userEmail?.toLowerCase().endsWith('.edu');
+
+    // Bypass NPI verification for .edu emails
+    if (isEduEmail) {
+      const sessionKey = `npi_verified_${userId}`;
+      const verifiedAtKey = `npi_verified_at_${userId}`;
+      sessionStorage.setItem(sessionKey, 'true');
+      sessionStorage.setItem(verifiedAtKey, new Date().toISOString());
+      setIsVerifying(false);
+      return;
+    }
+
+    // Get the current user's ID for session storage key
     const sessionKey = `npi_verified_${userId}`;
     const verifiedAtKey = `npi_verified_at_${userId}`;
     
