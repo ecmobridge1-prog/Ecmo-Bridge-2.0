@@ -325,7 +325,7 @@ export async function sendMessage(chatId: string, senderId: string, content: str
 
 /**
  * Create a new patient
- * @param patientData - Patient data including name, special_care, type, latitude, longitude
+ * @param patientData - Patient data including name, special_care, type, latitude, longitude, and all new fields
  * @returns The newly created patient
  */
 export async function createPatient(patientData: {
@@ -334,6 +334,23 @@ export async function createPatient(patientData: {
   type: string;
   latitude: number;
   longitude: number;
+  // New demographics fields
+  first_name?: string;
+  middle_name?: string;
+  last_name?: string;
+  dob?: string;
+  mrn?: string;
+  insurance?: string;
+  // New vitals fields
+  weight?: number;
+  blood_pressure?: string;
+  pulse?: number;
+  temperature?: number;
+  respiration_rate?: number;
+  pulse_oximetry?: number;
+  // New medical fields
+  failure_type?: string;
+  notes?: string;
 }) {
   const { data, error } = await supabase
     .from('patients')
@@ -369,10 +386,23 @@ export async function getAllPatients() {
 
 /**
  * Delete a patient by ID
+ * Also deletes all associated notifications
  * @param patientId - The patient's UUID
  * @returns The deleted patient data
  */
 export async function deletePatient(patientId: string) {
+  // First, delete all notifications associated with this patient
+  const { error: notificationError } = await supabase
+    .from('notifications')
+    .delete()
+    .eq('patient_id', patientId);
+
+  if (notificationError) {
+    console.error('Error deleting patient notifications:', notificationError);
+    throw notificationError;
+  }
+
+  // Then delete the patient
   const { data, error } = await supabase
     .from('patients')
     .delete()
@@ -419,4 +449,23 @@ export async function getUserNotifications(clerkUserId: string) {
   }
 
   return data;
+}
+
+/**
+ * Clear all notifications for a user
+ * @param clerkUserId - The Clerk user ID
+ * @returns void
+ */
+export async function clearUserNotifications(clerkUserId: string) {
+  const uuid = clerkIdToUuid(clerkUserId);
+  
+  const { error } = await supabase
+    .from('notifications')
+    .delete()
+    .eq('user_id', uuid);
+
+  if (error) {
+    console.error('Error clearing notifications:', error);
+    throw error;
+  }
 }
