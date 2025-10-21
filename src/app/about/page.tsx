@@ -88,16 +88,6 @@ export default function About() {
             </div>
           </div>
 
-          {/* Description Section */}
-          <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl p-12 mb-12">
-            <h2 className="text-3xl font-semibold text-gray-800 mb-6">
-              Our Mission
-            </h2>
-            <p className="text-lg text-gray-700 leading-relaxed max-w-4xl mx-auto">
-              ECMO Bridge is a state-of-the-art application designed to efficiently allocate ECMO (Extracorporeal Membrane Oxygenation) machines to patients in critical need. By integrating a sophisticated dynamic matching algorithm, ECMO Bridge assesses multiple vital factors to ensure optimal resource distribution and enhanced patient care
-            </p>
-          </div>
-
           {/* Team Section */}
           <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl p-12 mb-12">
             <h2 className="text-3xl font-semibold text-gray-800 mb-8">
