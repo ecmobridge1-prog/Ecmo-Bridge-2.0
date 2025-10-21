@@ -99,7 +99,7 @@ export default function About() {
           </div>
 
           {/* Team Section */}
-          <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl p-12">
+          <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl p-12 mb-12">
             <h2 className="text-3xl font-semibold text-gray-800 mb-8">
               Our Team
             </h2>
@@ -129,6 +129,27 @@ export default function About() {
                   </p>
                 </div>
               ))}
+            </div>
+          </div>
+
+          {/* Contact Section */}
+          <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl p-12">
+            <h2 className="text-3xl font-semibold text-gray-800 mb-6 text-center">
+              Contact Us
+            </h2>
+            <div className="text-center">
+              <p className="text-lg text-gray-700 mb-4">
+                Have questions or need support?
+              </p>
+              <a 
+                href="mailto:ecmobridge1@gmail.com"
+                className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-colors duration-200 shadow-lg"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                ecmobridge1@gmail.com
+              </a>
             </div>
           </div>
         </div>
