@@ -61,20 +61,16 @@ export default function About() {
             <div className="flex items-center justify-center gap-12">
               {/* Your Team Logo */}
               <div className="flex flex-col items-center">
-                {/* Replace with your team logo once you have the file */}
-                {/* <img 
-                  src="/YourTeamLogo.png" 
-                  alt="ECMO Bridge Team" 
+                <img 
+                  src="/ECMO Bridge.png" 
+                  alt="ECMO Bridge" 
                   className="w-48 h-48 object-contain mb-3"
-                /> */}
-                <div className="w-48 h-48 bg-gradient-to-br from-purple-600 to-purple-800 rounded-lg shadow-lg flex items-center justify-center mb-3">
-                  <span className="text-white text-2xl font-bold">ECMO Bridge</span>
-                </div>
-                <p className="text-lg font-semibold text-gray-700">Our Logo</p>
+                />
+                <p className="text-lg font-semibold text-gray-700">ECMO Bridge</p>
               </div>
 
               {/* X Symbol */}
-              <div className="text-6xl font-bold text-gray-400">×</div>
+              <div className="text-6xl font-bold text-gray-400"></div>
 
               {/* Mayo Clinic Logo */}
               <div className="flex flex-col items-center">
