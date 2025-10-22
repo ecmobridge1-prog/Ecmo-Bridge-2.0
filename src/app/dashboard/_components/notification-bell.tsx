@@ -258,9 +258,6 @@ export default function NotificationBell() {
                       <p className="text-sm font-semibold text-gray-800 mb-1">
                         🔔 New Patient Added
                       </p>
-                      <p className="text-sm text-gray-700 mb-1">
-                        <span className="font-medium">Patient:</span> {notification.patients?.[0]?.name || 'Unknown Patient'}
-                      </p>
                       <p className="text-sm text-gray-600 mb-1">
                         {notification.message}
                       </p>
