@@ -3,7 +3,9 @@
 import React from "react";
 import { useState, useEffect } from "react";
 import { GoogleMap, LoadScript, Autocomplete, Marker } from "@react-google-maps/api";
+import { useUser } from "@clerk/nextjs";
 import { getAllPatients, createPatient, deletePatient } from "@/lib/queries";
+import { clerkIdToUuid } from "@/lib/utils";
 import NotificationBell from "./notification-bell";
 
 const mapContainerStyle = {
@@ -43,6 +45,7 @@ interface Patient {
 }
 
 export default function PatientsECMOs() {
+  const { user } = useUser();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [autocomplete, setAutocomplete] = useState<google.maps.places.Autocomplete | null>(null);
   const [selectedLocation, setSelectedLocation] = useState<{
@@ -132,6 +135,8 @@ export default function PatientsECMOs() {
         pulse_oximetry: formData.pulseOximetry ? parseFloat(formData.pulseOximetry) : undefined,
         failure_type: formData.failureType || undefined,
         notes: formData.notes || undefined,
+        // Creator information
+        created_by_user_id: user ? clerkIdToUuid(user.id) : undefined,
       });
 
       // Reset form and close modal

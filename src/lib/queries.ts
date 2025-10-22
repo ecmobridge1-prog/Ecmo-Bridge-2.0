@@ -319,6 +319,25 @@ export async function sendMessage(chatId: string, senderId: string, content: str
   return data;
 }
 
+/**
+ * Remove a user from a chat
+ * @param chatId - The chat UUID
+ * @param userId - The user's UUID
+ * @returns void
+ */
+export async function leaveChatMember(chatId: string, userId: string) {
+  const { error } = await supabase
+    .from('chat_members')
+    .delete()
+    .eq('chat_id', chatId)
+    .eq('user_id', userId);
+
+  if (error) {
+    console.error('Error leaving chat:', error);
+    throw error;
+  }
+}
+
 // ============================================
 // PATIENT QUERIES
 // ============================================
@@ -351,6 +370,8 @@ export async function createPatient(patientData: {
   // New medical fields
   failure_type?: string;
   notes?: string;
+  // Creator information
+  created_by_user_id?: string;
 }) {
   const { data, error } = await supabase
     .from('patients')

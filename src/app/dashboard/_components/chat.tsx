@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
-import { getAllUsers, createChatWithMembers, getUserChats, getChatMessages, sendMessage } from "@/lib/queries";
+import { getAllUsers, createChatWithMembers, getUserChats, getChatMessages, sendMessage, leaveChatMember } from "@/lib/queries";
 import { clerkIdToUuid } from "@/lib/utils";
 
 // Helper function to get time ago
@@ -61,6 +61,7 @@ export default function Chat() {
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [sendingMessage, setSendingMessage] = useState(false);
   const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null);
+  const [leavingChat, setLeavingChat] = useState<string | null>(null);
 
   // Fetch user's chats on component mount
   useEffect(() => {
@@ -238,6 +239,33 @@ export default function Chat() {
     }
   };
 
+  const handleLeaveChat = async (chatId: string) => {
+    if (!user) {
+      console.error('User not logged in');
+      return;
+    }
+
+    setLeavingChat(chatId);
+    try {
+      const currentUserUuid = clerkIdToUuid(user.id);
+      await leaveChatMember(chatId, currentUserUuid);
+      
+      // If we're currently viewing this chat, go back to chat list
+      if (selectedChat && selectedChat.id === chatId) {
+        setSelectedChat(null);
+      }
+      
+      // Refresh chat list
+      await fetchUserChats();
+      console.log('Left chat successfully!');
+    } catch (error) {
+      console.error('Error leaving chat:', error);
+      alert('Failed to leave chat. Please try again.');
+    } finally {
+      setLeavingChat(null);
+    }
+  };
+
   // If a chat is selected, show the chat view
   if (selectedChat) {
     // Convert current user's Clerk ID to UUID for comparison
@@ -264,6 +292,25 @@ export default function Chat() {
               )}
             </div>
           </div>
+          <button
+            onClick={() => handleLeaveChat(selectedChat.id)}
+            disabled={leavingChat === selectedChat.id}
+            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {leavingChat === selectedChat.id ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                <span>Leaving...</span>
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                <span>Leave Chat</span>
+              </>
+            )}
+          </button>
         </div>
 
         {/* Messages Area */}
@@ -506,11 +553,13 @@ export default function Chat() {
               return (
                 <div
                   key={chat.id}
-                  onClick={() => setSelectedChat(chat)}
-                  className="bg-gray-50 hover:bg-purple-50 border border-gray-200 rounded-lg p-4 cursor-pointer transition-all duration-200 hover:border-purple-300"
+                  className="bg-gray-50 hover:bg-purple-50 border border-gray-200 rounded-lg p-4 transition-all duration-200 hover:border-purple-300"
                 >
                   <div className="flex items-center justify-between">
-                    <div className="flex-1">
+                    <div 
+                      className="flex-1 cursor-pointer"
+                      onClick={() => setSelectedChat(chat)}
+                    >
                       <div className="flex items-center gap-2">
                         <h3 className="font-medium text-gray-800">
                           {chat.title}
@@ -525,8 +574,32 @@ export default function Chat() {
                         Click to open chat
                       </p>
                     </div>
-                    <div className="text-xs text-gray-400">
-                      {timeAgo}
+                    <div className="flex items-center gap-3">
+                      <div className="text-xs text-gray-400">
+                        {timeAgo}
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleLeaveChat(chat.id);
+                        }}
+                        disabled={leavingChat === chat.id}
+                        className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded transition-colors font-medium flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {leavingChat === chat.id ? (
+                          <>
+                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
+                            <span>Leaving...</span>
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                            </svg>
+                            <span>Leave</span>
+                          </>
+                        )}
+                      </button>
                     </div>
                   </div>
                 </div>
