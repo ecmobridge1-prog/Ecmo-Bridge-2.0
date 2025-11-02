@@ -338,6 +338,33 @@ export async function leaveChatMember(chatId: string, userId: string) {
   }
 }
 
+/**
+ * Get all members of a specific chat
+ * @param chatId - The chat UUID
+ * @returns Array of users who are members of the chat
+ */
+export async function getChatMembers(chatId: string) {
+  const { data, error } = await supabase
+    .from('chat_members')
+    .select(`
+      user_id,
+      profiles:user_id (
+        id,
+        username,
+        full_name
+      )
+    `)
+    .eq('chat_id', chatId);
+
+  if (error) {
+    console.error('Error fetching chat members:', error);
+    throw error;
+  }
+
+  // Transform the data to return user profiles
+  return data.map((item: any) => item.profiles).filter(Boolean);
+}
+
 // ============================================
 // PATIENT QUERIES
 // ============================================
