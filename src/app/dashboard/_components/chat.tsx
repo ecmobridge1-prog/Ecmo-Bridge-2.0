@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
-import { getAllUsers, createChatWithMembers, getUserChats, getChatMessages, sendMessage, leaveChatMember } from "@/lib/queries";
+import { getAllUsers, createChatWithMembers, getUserChats, getChatMessages, sendMessage, leaveChatMember, getChatMembers } from "@/lib/queries";
 import { clerkIdToUuid } from "@/lib/utils";
 
 // Helper function to get time ago
@@ -45,6 +45,30 @@ interface Message {
   } | null;
 }
 
+interface FAQQuestion {
+  id: string;
+  question: string;
+  answer?: string;
+  submittedBy: string;
+  submittedByName: string;
+  answeredBy?: string;
+  answeredByName?: string;
+}
+
+interface FAQData {
+  id: string;
+  title: string;
+  description: string;
+  questions: FAQQuestion[];
+  status: 'open' | 'answering' | 'completed';
+  chatId: string; // Which chat this questionnaire belongs to
+  createdForUserId: string; // The patient this questionnaire is for
+  createdForUserName: string; // Display name of the patient
+  createdByUserId: string; // Who created this questionnaire
+  createdByUserName: string; // Display name of creator
+  isGroupQuestionnaire: boolean; // Whether this is for all members in a group
+}
+
 export default function Chat() {
   const { user } = useUser();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -62,6 +86,17 @@ export default function Chat() {
   const [sendingMessage, setSendingMessage] = useState(false);
   const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null);
   const [leavingChat, setLeavingChat] = useState<string | null>(null);
+  
+  // Questionnaire states
+  const [isCreatingQuestionnaire, setIsCreatingQuestionnaire] = useState(false);
+  const [questionnaireTitle, setQuestionnaireTitle] = useState("");
+  const [questionnaireDescription, setQuestionnaireDescription] = useState("");
+  const [questionnaires, setQuestionnaires] = useState<FAQData[]>([]); // Store questionnaires per chat
+  const [chatMembers, setChatMembers] = useState<User[]>([]);
+  const [newQuestion, setNewQuestion] = useState("");
+  const [answeringQuestionId, setAnsweringQuestionId] = useState<string | null>(null);
+  const [answerText, setAnswerText] = useState("");
+  const [expandedQuestionnaires, setExpandedQuestionnaires] = useState<Set<string>>(new Set());
 
   // Fetch user's chats on component mount
   useEffect(() => {
@@ -70,10 +105,11 @@ export default function Chat() {
     }
   }, [user]);
 
-  // Fetch messages when a chat is selected
+  // Fetch messages and chat members when a chat is selected
   useEffect(() => {
     if (selectedChat) {
       fetchMessages();
+      fetchChatMembers();
       startPolling();
     } else {
       stopPolling();
@@ -101,6 +137,17 @@ export default function Chat() {
       console.error('Error fetching users:', error);
     } finally {
       setLoadingUsers(false);
+    }
+  };
+
+  const fetchChatMembers = async () => {
+    if (!selectedChat) return;
+    
+    try {
+      const members = await getChatMembers(selectedChat.id);
+      setChatMembers(members);
+    } catch (error) {
+      console.error('Error fetching chat members:', error);
     }
   };
 
@@ -266,6 +313,141 @@ export default function Chat() {
     }
   };
 
+  // Questionnaire Functions
+  const handleCreateQuestionnaire = () => {
+    if (!questionnaireTitle.trim()) {
+      alert('Please enter a questionnaire title');
+      return;
+    }
+
+    if (!user || !selectedChat) return;
+
+    const currentUserUuid = clerkIdToUuid(user.id);
+    const currentUserName = user.fullName || user.username || 'Unknown User';
+    
+    const isGroupChat = selectedChat.is_group;
+    
+    // For group chats, list all members. For 1-on-1, find the other person
+    let patientId = '';
+    let patientName = '';
+    
+    if (isGroupChat) {
+      // Get all members except current user
+      const otherMembers = chatMembers.filter(m => m.id !== currentUserUuid);
+      patientName = otherMembers.map(m => m.full_name || m.username || 'Unknown').join(', ');
+      patientId = 'group'; // Special marker for group questionnaires
+    } else {
+      // Find the patient (first chat member that isn't the current user)
+      const patient = chatMembers.find(m => m.id !== currentUserUuid);
+      patientId = patient?.id || '';
+      patientName = patient?.full_name || patient?.username || 'Unknown Patient';
+    }
+
+    const newQuestionnaire: FAQData = {
+      id: Date.now().toString(),
+      title: questionnaireTitle,
+      description: questionnaireDescription,
+      questions: [],
+      status: 'open',
+      chatId: selectedChat.id,
+      createdForUserId: patientId,
+      createdForUserName: patientName,
+      createdByUserId: currentUserUuid,
+      createdByUserName: currentUserName,
+      isGroupQuestionnaire: isGroupChat
+    };
+
+    setQuestionnaires([...questionnaires, newQuestionnaire]);
+    setQuestionnaireTitle("");
+    setQuestionnaireDescription("");
+    setIsCreatingQuestionnaire(false);
+    
+    // Automatically expand the newly created questionnaire
+    setExpandedQuestionnaires(prev => {
+      const newSet = new Set(prev);
+      newSet.add(newQuestionnaire.id);
+      return newSet;
+    });
+    
+    // In real implementation, this would be sent as a special message type
+    console.log('Questionnaire created:', newQuestionnaire);
+  };
+
+  const handleAddQuestion = (questionnaireId: string) => {
+    if (!newQuestion.trim() || !user) return;
+
+    const currentUserUuid = clerkIdToUuid(user.id);
+    const userName = user.fullName || user.username || 'Unknown User';
+
+    setQuestionnaires(questionnaires.map(q => {
+      if (q.id === questionnaireId) {
+        return {
+          ...q,
+          questions: [
+            ...q.questions,
+            {
+              id: Date.now().toString(),
+              question: newQuestion.trim(),
+              submittedBy: currentUserUuid,
+              submittedByName: userName
+            }
+          ]
+        };
+      }
+      return q;
+    }));
+
+    setNewQuestion("");
+  };
+
+  const handleAnswerQuestion = (questionnaireId: string, questionId: string) => {
+    if (!answerText.trim() || !user) return;
+
+    const currentUserUuid = clerkIdToUuid(user.id);
+    const userName = user.fullName || user.username || 'Unknown User';
+
+    setQuestionnaires(questionnaires.map(q => {
+      if (q.id === questionnaireId) {
+        const updatedQuestions = q.questions.map(question => {
+          if (question.id === questionId) {
+            return {
+              ...question,
+              answer: answerText.trim(),
+              answeredBy: currentUserUuid,
+              answeredByName: userName
+            };
+          }
+          return question;
+        });
+
+        // Check if all questions are answered
+        const allAnswered = updatedQuestions.every(q => q.answer);
+        
+        return {
+          ...q,
+          questions: updatedQuestions,
+          status: allAnswered ? 'completed' : 'answering'
+        };
+      }
+      return q;
+    }));
+
+    setAnswerText("");
+    setAnsweringQuestionId(null);
+  };
+
+  const toggleQuestionnaireExpansion = (questionnaireId: string) => {
+    setExpandedQuestionnaires(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(questionnaireId)) {
+        newSet.delete(questionnaireId);
+      } else {
+        newSet.add(questionnaireId);
+      }
+      return newSet;
+    });
+  };
+
   // If a chat is selected, show the chat view
   if (selectedChat) {
     // Convert current user's Clerk ID to UUID for comparison
@@ -287,11 +469,35 @@ export default function Chat() {
               <h2 className="text-xl font-semibold text-gray-800">
                 {selectedChat.title}
               </h2>
-              {selectedChat.is_group && (
-                <p className="text-sm text-gray-500">Group chat</p>
+              {selectedChat.is_group ? (
+                <div className="text-sm text-gray-500 space-y-0.5">
+                  <div>
+                    <span className="font-medium">Patients:</span>{' '}
+                    {chatMembers
+                      .filter(m => m.id !== currentUserUuid)
+                      .map(m => m.full_name || m.username || 'Unknown')
+                      .join(', ') || 'None'}
+                  </div>
+                  <div>
+                    <span className="font-medium">Physician:</span>{' '}
+                    {chatMembers.find(m => m.id === currentUserUuid)?.full_name || 
+                     chatMembers.find(m => m.id === currentUserUuid)?.username || 
+                     'You'}
+                  </div>
+                </div>
+              ) : (
+                chatMembers.filter(m => m.id !== currentUserUuid).length > 0 && (
+                  <p className="text-sm text-gray-500">
+                    <span className="font-medium">Patient:</span>{' '}
+                    {chatMembers.filter(m => m.id !== currentUserUuid)[0]?.full_name || 
+                     chatMembers.filter(m => m.id !== currentUserUuid)[0]?.username || 
+                     'Unknown'}
+                  </p>
+                )
               )}
             </div>
           </div>
+          
           <button
             onClick={() => handleLeaveChat(selectedChat.id)}
             disabled={leavingChat === selectedChat.id}
@@ -313,13 +519,13 @@ export default function Chat() {
           </button>
         </div>
 
-        {/* Messages Area */}
+        {/* Main Content Area */}
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
           {loadingMessages ? (
             <div className="flex items-center justify-center h-full">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
             </div>
-          ) : messages.length === 0 ? (
+          ) : messages.length === 0 && questionnaires.filter(q => q.chatId === selectedChat.id).length === 0 ? (
             <div className="flex items-center justify-center h-full text-gray-500">
               <div className="text-center">
                 <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -330,46 +536,231 @@ export default function Chat() {
               </div>
             </div>
           ) : (
-            messages.map((message) => {
-              const isMyMessage = message.sender_id === currentUserUuid;
-              const timeAgo = getTimeAgo(message.created_at);
-              const senderName = message.profiles?.full_name || message.profiles?.username || 'Unknown';
+            <>
+              {/* Regular Messages */}
+              {messages.map((message) => {
+                const isMyMessage = message.sender_id === currentUserUuid;
+                const timeAgo = getTimeAgo(message.created_at);
+                const senderName = message.profiles?.full_name || message.profiles?.username || 'Unknown';
 
-              return (
-                <div
-                  key={message.id}
-                  className={`flex ${isMyMessage ? 'justify-end' : 'justify-start'}`}
-                >
+                return (
                   <div
-                    className={`max-w-[70%] rounded-lg p-3 ${
-                      isMyMessage
-                        ? 'bg-purple-600 text-white'
-                        : 'bg-gray-200 text-gray-800'
-                    }`}
+                    key={message.id}
+                    className={`flex ${isMyMessage ? 'justify-end' : 'justify-start'}`}
                   >
-                    {!isMyMessage && (
-                      <p className="text-xs font-semibold mb-1 opacity-75">
-                        {senderName}
-                      </p>
-                    )}
-                    <p>{message.content}</p>
-                    <p
-                      className={`text-xs mt-1 ${
-                        isMyMessage ? 'text-purple-200' : 'text-gray-500'
+                    <div
+                      className={`max-w-[70%] rounded-lg p-3 ${
+                        isMyMessage
+                          ? 'bg-purple-600 text-white'
+                          : 'bg-gray-200 text-gray-800'
                       }`}
                     >
-                      {timeAgo}
-                    </p>
+                      {!isMyMessage && (
+                        <p className="text-xs font-semibold mb-1 opacity-75">
+                          {senderName}
+                        </p>
+                      )}
+                      <p>{message.content}</p>
+                      <p
+                        className={`text-xs mt-1 ${
+                          isMyMessage ? 'text-purple-200' : 'text-gray-500'
+                        }`}
+                      >
+                        {timeAgo}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              );
-            })
+                );
+              })}
+
+              {/* Questionnaires displayed as collapsible messages - filtered by current chat */}
+              {questionnaires
+                .filter(q => q.chatId === selectedChat.id)
+                .map((questionnaire) => {
+                  const isExpanded = expandedQuestionnaires.has(questionnaire.id);
+                  return (
+                    <div key={questionnaire.id} className="w-full">
+                      {/* Collapsed view */}
+                      {!isExpanded && (
+                        <div 
+                          onClick={() => toggleQuestionnaireExpansion(questionnaire.id)}
+                          className="bg-gradient-to-r from-purple-100 to-blue-100 border-2 border-purple-400 rounded-lg p-4 cursor-pointer hover:from-purple-200 hover:to-blue-200 transition-all shadow-md"
+                        >
+                          <div className="flex items-center gap-3">
+                            <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <div className="flex-1">
+                              <p className="text-gray-800 font-medium">
+                                {questionnaire.createdByUserName} has launched a questionnaire. <span className="text-purple-700 underline">Click to expand it</span>
+                              </p>
+                              <p className="text-xs text-gray-600 mt-1">
+                                {questionnaire.title} • {questionnaire.questions.length} question(s)
+                              </p>
+                            </div>
+                            <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Expanded view */}
+                      {isExpanded && (
+                        <div className="bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-300 rounded-xl p-6 shadow-lg">
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <h3 className="text-xl font-bold text-gray-800">{questionnaire.title}</h3>
+                              </div>
+                              <p className="text-xs text-purple-600 mb-2">
+                                Patient: {questionnaire.isGroupQuestionnaire ? `All patients (${questionnaire.createdForUserName})` : questionnaire.createdForUserName} • Physician: {questionnaire.createdByUserName}
+                              </p>
+                              {questionnaire.description && (
+                                <p className="text-gray-600 mb-3">{questionnaire.description}</p>
+                              )}
+                              <div className="flex items-center gap-3">
+                                <span className={`text-sm px-3 py-1 rounded-full ${
+                                  questionnaire.status === 'open' ? 'bg-green-100 text-green-700' :
+                                  questionnaire.status === 'answering' ? 'bg-yellow-100 text-yellow-700' :
+                                  'bg-blue-100 text-blue-700'
+                                }`}>
+                                  {questionnaire.status === 'open' ? 'Open for Questions' :
+                                   questionnaire.status === 'answering' ? 'Being Answered' :
+                                   'Completed'}
+                                </span>
+                                <span className="text-sm text-gray-500">
+                                  {questionnaire.questions.length} question(s)
+                                </span>
+                              </div>
+                            </div>
+                            <button
+                              onClick={() => toggleQuestionnaireExpansion(questionnaire.id)}
+                              className="text-gray-500 hover:text-gray-700 transition-colors"
+                            >
+                              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                              </svg>
+                            </button>
+                          </div>
+
+                          {/* Add Question Section */}
+                          <div className="bg-white p-4 rounded-lg mb-4">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Add Your Question
+                            </label>
+                            <div className="flex gap-2">
+                              <input
+                                type="text"
+                                value={newQuestion}
+                                onChange={(e) => setNewQuestion(e.target.value)}
+                                placeholder="Type your question here..."
+                                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                onKeyPress={(e) => {
+                                  if (e.key === 'Enter' && newQuestion.trim()) {
+                                    handleAddQuestion(questionnaire.id);
+                                  }
+                                }}
+                              />
+                              <button
+                                onClick={() => handleAddQuestion(questionnaire.id)}
+                                disabled={!newQuestion.trim()}
+                                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                Add
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Questions List */}
+                          {questionnaire.questions.length > 0 && (
+                            <div className="space-y-3">
+                              <h4 className="font-semibold text-gray-800">Questions:</h4>
+                              {questionnaire.questions.map((q) => (
+                                <div key={q.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                                  <p className="font-medium text-gray-800 mb-1">{q.question}</p>
+                                  <p className="text-xs text-gray-500 mb-2">Asked by {q.submittedByName}</p>
+                                  
+                                  {q.answer ? (
+                                    <div className="bg-green-50 border border-green-200 rounded-lg p-3 mt-2">
+                                      <p className="text-sm font-medium text-green-800 mb-1">Answer:</p>
+                                      <p className="text-gray-700">{q.answer}</p>
+                                      {q.answeredByName && (
+                                        <p className="text-xs text-gray-500 mt-1">Answered by {q.answeredByName}</p>
+                                      )}
+                                    </div>
+                                  ) : currentUserUuid === questionnaire.createdByUserId ? (
+                                    // Only the questionnaire creator (doctor) can answer questions
+                                    answeringQuestionId === q.id ? (
+                                      <div className="mt-2">
+                                        <textarea
+                                          value={answerText}
+                                          onChange={(e) => setAnswerText(e.target.value)}
+                                          placeholder="Type your answer..."
+                                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                          rows={3}
+                                        />
+                                        <div className="flex gap-2 mt-2">
+                                          <button
+                                            onClick={() => handleAnswerQuestion(questionnaire.id, q.id)}
+                                            disabled={!answerText.trim()}
+                                            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors disabled:opacity-50"
+                                          >
+                                            Submit Answer
+                                          </button>
+                                          <button
+                                            onClick={() => {
+                                              setAnsweringQuestionId(null);
+                                              setAnswerText("");
+                                            }}
+                                            className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg transition-colors"
+                                          >
+                                            Cancel
+                                          </button>
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <button
+                                        onClick={() => setAnsweringQuestionId(q.id)}
+                                        className="mt-2 text-sm text-purple-600 hover:text-purple-700 font-medium"
+                                      >
+                                        Answer this question
+                                      </button>
+                                    )
+                                  ) : (
+                                    // Patients see a message that the question is awaiting an answer
+                                    <div className="mt-2 text-sm text-gray-500 italic">
+                                      Waiting for healthcare provider to answer...
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+            </>
           )}
         </div>
 
         {/* Message Input Area */}
         <div className="p-4 border-t border-gray-200">
           <div className="flex gap-2">
+            <button
+              onClick={() => setIsCreatingQuestionnaire(true)}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium flex items-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>Launch Questionnaire</span>
+            </button>
             <input
               type="text"
               value={messageText}
@@ -400,6 +791,95 @@ export default function Chat() {
             </button>
           </div>
         </div>
+
+        {/* Questionnaire Creation Modal */}
+        {isCreatingQuestionnaire && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6 relative">
+              <button
+                onClick={() => {
+                  setIsCreatingQuestionnaire(false);
+                  setQuestionnaireTitle("");
+                  setQuestionnaireDescription("");
+                }}
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+
+              <h3 className="text-2xl font-semibold text-gray-800 mb-6">
+                Create Questionnaire
+              </h3>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Title *
+                  </label>
+                  <input
+                    type="text"
+                    value={questionnaireTitle}
+                    onChange={(e) => setQuestionnaireTitle(e.target.value)}
+                    placeholder="e.g., Patient Care Questions"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Description (Optional)
+                  </label>
+                  <textarea
+                    value={questionnaireDescription}
+                    onChange={(e) => setQuestionnaireDescription(e.target.value)}
+                    placeholder="Add a description to help patients understand what questions they should ask..."
+                    rows={4}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex gap-2">
+                    <svg className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div className="text-sm text-blue-800">
+                      <p className="font-medium mb-1">How it works:</p>
+                      <ul className="list-disc list-inside space-y-1">
+                        <li>The questionnaire will appear in this chat for everyone</li>
+                        <li>Patients can add their questions directly</li>
+                        <li>Healthcare providers can answer questions as they come in</li>
+                        <li>All questions and answers appear in the chat window</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={() => {
+                    setIsCreatingQuestionnaire(false);
+                    setQuestionnaireTitle("");
+                    setQuestionnaireDescription("");
+                  }}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleCreateQuestionnaire}
+                  disabled={!questionnaireTitle.trim()}
+                  className="flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Create Questionnaire
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -456,10 +936,10 @@ export default function Chat() {
               />
             </div>
 
-            {/* User Selection */}
+            {/* Patient Selection */}
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Select Users
+                Select Patients
               </label>
               <div className="border border-gray-300 rounded-lg max-h-48 overflow-y-auto">
                 {loadingUsers ? (
@@ -468,7 +948,7 @@ export default function Chat() {
                   </div>
                 ) : users.length === 0 ? (
                   <div className="text-center py-8 text-gray-500">
-                    <p>No users found</p>
+                    <p>No patients found</p>
                   </div>
                 ) : (
                   users.map((user) => (
@@ -495,7 +975,7 @@ export default function Chat() {
                 )}
               </div>
               <p className="text-sm text-gray-500 mt-2">
-                {selectedUsers.length} user(s) selected
+                {selectedUsers.length} patient(s) selected
               </p>
             </div>
 
