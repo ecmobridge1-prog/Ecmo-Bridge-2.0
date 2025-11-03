@@ -275,6 +275,12 @@ export async function getChatMessages(chatId: string) {
       content,
       sender_id,
       created_at,
+      is_questionnaire,
+      questionnaire_id,
+      questionnaires:questionnaire_id (
+        id,
+        title
+      ),
       profiles:sender_id (
         username,
         full_name
@@ -285,6 +291,252 @@ export async function getChatMessages(chatId: string) {
 
   if (error) {
     console.error('Error fetching chat messages:', error);
+    throw error;
+  }
+
+  return data;
+}
+
+/**
+ * Create a questionnaire record
+ * @param chatId - The chat UUID
+ * @param openedByUserId - The user UUID opening the questionnaire
+ * @param title - Questionnaire title
+ */
+export async function createQuestionnaire(
+  chatId: string,
+  openedByUserId: string,
+  title: string
+) {
+  const { data, error } = await supabase
+    .from('questionnaires')
+    .insert([
+      { chat_id: chatId, opened_by_user_id: openedByUserId, title }
+    ])
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error creating questionnaire:', error);
+    throw error;
+  }
+  return data as { id: string; chat_id: string; opened_by_user_id: string; title: string };
+}
+
+/**
+ * Send a questionnaire message into the chat
+ * @param chatId - The chat UUID
+ * @param senderId - The sender's UUID
+ * @param questionnaireId - The questionnaire UUID
+ */
+export async function sendQuestionnaireMessage(
+  chatId: string,
+  senderId: string,
+  questionnaireId: string
+) {
+  const { data, error } = await supabase
+    .from('messages')
+    .insert([
+      {
+        chat_id: chatId,
+        sender_id: senderId,
+        content: 'Questionnaire opened',
+        is_questionnaire: true,
+        questionnaire_id: questionnaireId,
+      },
+    ])
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error sending questionnaire message:', error);
+    throw error;
+  }
+
+  return data;
+}
+
+// ============================================
+// QUESTIONNAIRE Q&A QUERIES
+// ============================================
+
+/**
+ * Get questionnaires for a given chat
+ */
+export async function getQuestionnairesByChat(chatId: string) {
+  const { data, error } = await supabase
+    .from('questionnaires')
+    .select(`
+      id,
+      chat_id,
+      opened_by_user_id,
+      title,
+      created_at,
+      profiles:opened_by_user_id ( id, username, full_name )
+    `)
+    .eq('chat_id', chatId)
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching questionnaires by chat:', error);
+    throw error;
+  }
+
+  return data;
+}
+
+/**
+ * Get single questionnaire by id
+ */
+export async function getQuestionnaireById(questionnaireId: string) {
+  const { data, error } = await supabase
+    .from('questionnaires')
+    .select(`
+      id,
+      chat_id,
+      opened_by_user_id,
+      title,
+      created_at,
+      profiles:opened_by_user_id ( id, username, full_name )
+    `)
+    .eq('id', questionnaireId)
+    .single();
+
+  if (error) {
+    console.error('Error fetching questionnaire by id:', error);
+    throw error;
+  }
+
+  return data;
+}
+
+/**
+ * Get questions for a questionnaire
+ */
+export async function getQuestionsByQuestionnaire(questionnaireId: string) {
+  const { data, error } = await supabase
+    .from('questions')
+    .select(`
+      id,
+      questionnaire_id,
+      question_text
+    `)
+    .eq('questionnaire_id', questionnaireId);
+
+  if (error) {
+    console.error('Error fetching questions by questionnaire:', error);
+    throw error;
+  }
+
+  return data;
+}
+
+/**
+ * Get responses for a question with responder profile
+ */
+export async function getResponsesByQuestion(questionId: string) {
+  const { data, error } = await supabase
+    .from('responses')
+    .select(`
+      id,
+      question_id,
+      responder_id,
+      response_text,
+      created_at,
+      profiles:responder_id ( id, username, full_name )
+    `)
+    .eq('question_id', questionId)
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching responses by question:', error);
+    throw error;
+  }
+
+  return data;
+}
+
+/**
+ * Get questions with nested responses (and responder profiles) for a questionnaire
+ */
+export async function getQuestionsWithResponses(questionnaireId: string) {
+  const { data, error } = await supabase
+    .from('questions')
+    .select(`
+      id,
+      questionnaire_id,
+      question_text,
+      responses (
+        id,
+        question_id,
+        responder_id,
+        response_text,
+        created_at,
+        profiles:responder_id ( id, username, full_name )
+      )
+    `)
+    .eq('questionnaire_id', questionnaireId);
+
+  if (error) {
+    console.error('Error fetching questions with responses:', error);
+    throw error;
+  }
+
+  // Sort nested responses ascending by created_at if present
+  const sorted = (data || []).map((q: any) => ({
+    ...q,
+    responses: Array.isArray(q.responses)
+      ? [...q.responses].sort((a, b) => {
+          if (!a.created_at || !b.created_at) return 0;
+          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        })
+      : []
+  }));
+
+  return sorted;
+}
+
+/**
+ * Add a new question to a questionnaire
+ */
+export async function addQuestion(questionnaireId: string, questionText: string) {
+  const { data, error } = await supabase
+    .from('questions')
+    .insert([
+      {
+        questionnaire_id: questionnaireId,
+        question_text: questionText
+      }
+    ])
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error adding question:', error);
+    throw error;
+  }
+
+  return data;
+}
+
+/**
+ * Add a new response to a question
+ */
+export async function addResponse(questionId: string, responderId: string, responseText: string) {
+  const { data, error } = await supabase
+    .from('responses')
+    .insert([
+      {
+        question_id: questionId,
+        responder_id: responderId,
+        response_text: responseText
+      }
+    ])
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error adding response:', error);
     throw error;
   }
 
