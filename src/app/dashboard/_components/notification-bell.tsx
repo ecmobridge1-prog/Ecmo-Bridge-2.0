@@ -10,9 +10,13 @@ interface Notification {
   id: string;
   message: string;
   created_at: string;
+  notification_type?: string;
+  patient_id?: string;
+  questionnaire_id?: string;
   patients: {
+    id: string;
     name: string;
-  }[] | null;
+  } | null;
 }
 
 // Helper function to format relative time
@@ -35,7 +39,11 @@ function formatRelativeTime(dateString: string): string {
   }
 }
 
-export default function NotificationBell() {
+interface NotificationBellProps {
+  onQuestionnaireNotificationClick?: (patientId: string, questionnaireId: string) => void;
+}
+
+export default function NotificationBell({ onQuestionnaireNotificationClick }: NotificationBellProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
@@ -228,46 +236,74 @@ export default function NotificationBell() {
                 <p className="text-gray-500 text-sm">Loading notifications...</p>
               </div>
             ) : notifications.length > 0 ? (
-              notifications.map((notification) => (
-                <div
-                  key={notification.id}
-                  className="px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0 cursor-pointer"
-                >
-                  <div className="flex items-start space-x-3">
-                    {/* Icon */}
-                    <div className="flex-shrink-0 mt-1">
-                      <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-                        <svg
-                          className="w-4 h-4 text-purple-600"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                          />
-                        </svg>
+              notifications.map((notification) => {
+                const isQuestionnaire = notification.notification_type === 'questionnaire';
+                
+                return (
+                  <div
+                    key={notification.id}
+                    onClick={() => {
+                      if (isQuestionnaire && notification.patient_id && notification.questionnaire_id && onQuestionnaireNotificationClick) {
+                        onQuestionnaireNotificationClick(notification.patient_id, notification.questionnaire_id);
+                        setIsOpen(false);
+                      }
+                    }}
+                    className={`px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0 ${
+                      isQuestionnaire ? 'cursor-pointer' : ''
+                    }`}
+                  >
+                    <div className="flex items-start space-x-3">
+                      {/* Icon */}
+                      <div className="flex-shrink-0 mt-1">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                          isQuestionnaire ? 'bg-blue-100' : 'bg-purple-100'
+                        }`}>
+                          <svg
+                            className={`w-4 h-4 ${isQuestionnaire ? 'text-blue-600' : 'text-purple-600'}`}
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            {isQuestionnaire ? (
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                              />
+                            ) : (
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                              />
+                            )}
+                          </svg>
+                        </div>
+                      </div>
+
+                      {/* Content */}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-gray-800 mb-1">
+                          {isQuestionnaire ? '❓ New Questionnaire' : '🔔 New Patient Added'}
+                        </p>
+                        <p className="text-sm text-gray-600 mb-1">
+                          {notification.message}
+                        </p>
+                        {isQuestionnaire && (
+                          <p className="text-xs text-blue-600 font-medium mb-1">
+                            Click to view questionnaire
+                          </p>
+                        )}
+                        <p className="text-xs text-gray-500">
+                          {formatRelativeTime(notification.created_at)}
+                        </p>
                       </div>
                     </div>
-
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-800 mb-1">
-                        🔔 New Patient Added
-                      </p>
-                      <p className="text-sm text-gray-600 mb-1">
-                        {notification.message}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {formatRelativeTime(notification.created_at)}
-                      </p>
-                    </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             ) : (
               // Empty State
               <div className="px-4 py-8 text-center">

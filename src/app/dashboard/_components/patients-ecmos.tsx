@@ -4,7 +4,18 @@ import React from "react";
 import { useState, useEffect } from "react";
 import { GoogleMap, LoadScript, Autocomplete, Marker } from "@react-google-maps/api";
 import { useUser } from "@clerk/nextjs";
-import { getAllPatients, createPatient, deletePatient } from "@/lib/queries";
+import { 
+  getAllPatients, 
+  getPatientById,
+  createPatient, 
+  deletePatient,
+  createPatientQuestionnaire,
+  sendNotificationToAllUsers,
+  getPatientQuestionnaires,
+  getQuestionsWithResponses,
+  addQuestion,
+  addResponse
+} from "@/lib/queries";
 import { clerkIdToUuid } from "@/lib/utils";
 import NotificationBell from "./notification-bell";
 
@@ -58,6 +69,19 @@ export default function PatientsECMOs() {
   const [submitting, setSubmitting] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+
+  // Questionnaire state
+  const [isQuestionnaireModalOpen, setIsQuestionnaireModalOpen] = useState(false);
+  const [questionnaireTitle, setQuestionnaireTitle] = useState('');
+  const [creatingQuestionnaire, setCreatingQuestionnaire] = useState(false);
+  const [patientQuestionnaires, setPatientQuestionnaires] = useState<any[]>([]);
+  const [loadingQuestionnaires, setLoadingQuestionnaires] = useState(false);
+  const [selectedQuestionnaireId, setSelectedQuestionnaireId] = useState<string | null>(null);
+  const [questionnaireData, setQuestionnaireData] = useState<any>(null);
+  const [loadingQuestionnaireData, setLoadingQuestionnaireData] = useState(false);
+  const [newQuestion, setNewQuestion] = useState('');
+  const [answeringQuestionId, setAnsweringQuestionId] = useState<string | null>(null);
+  const [answerText, setAnswerText] = useState('');
 
   // Form state
   const [formData, setFormData] = useState({
@@ -190,6 +214,149 @@ export default function PatientsECMOs() {
     }
   };
 
+  // Questionnaire handlers
+  const fetchPatientQuestionnaires = async (patientId: string) => {
+    try {
+      setLoadingQuestionnaires(true);
+      const questionnaires = await getPatientQuestionnaires(patientId);
+      setPatientQuestionnaires(questionnaires || []);
+    } catch (error) {
+      console.error('Error fetching patient questionnaires:', error);
+    } finally {
+      setLoadingQuestionnaires(false);
+    }
+  };
+
+  const handleCreateQuestionnaire = async () => {
+    if (!questionnaireTitle.trim() || !selectedPatient || !user) {
+      alert('Please enter a questionnaire title');
+      return;
+    }
+
+    try {
+      setCreatingQuestionnaire(true);
+      const currentUserUuid = clerkIdToUuid(user.id);
+      
+      // Create the questionnaire
+      const questionnaire = await createPatientQuestionnaire(
+        selectedPatient.id,
+        currentUserUuid,
+        questionnaireTitle.trim()
+      );
+
+      // Send notifications to all users
+      await sendNotificationToAllUsers(
+        `New questionnaire "${questionnaireTitle.trim()}" for patient ${selectedPatient.name}`,
+        selectedPatient.id,
+        questionnaire.id,
+        'questionnaire'
+      );
+
+      // Reset form and refresh questionnaires
+      setQuestionnaireTitle('');
+      setIsQuestionnaireModalOpen(false);
+      await fetchPatientQuestionnaires(selectedPatient.id);
+      
+      alert('Questionnaire shared with all users successfully!');
+    } catch (error) {
+      console.error('Error creating questionnaire:', error);
+      alert('Failed to create questionnaire. Please try again.');
+    } finally {
+      setCreatingQuestionnaire(false);
+    }
+  };
+
+  const handleOpenQuestionnaire = async (questionnaireId: string) => {
+    try {
+      setLoadingQuestionnaireData(true);
+      setSelectedQuestionnaireId(questionnaireId);
+      const questions = await getQuestionsWithResponses(questionnaireId);
+      setQuestionnaireData(questions);
+    } catch (error) {
+      console.error('Error loading questionnaire:', error);
+      alert('Failed to load questionnaire');
+    } finally {
+      setLoadingQuestionnaireData(false);
+    }
+  };
+
+  const handleAddQuestion = async () => {
+    if (!newQuestion.trim() || !selectedQuestionnaireId) return;
+
+    try {
+      await addQuestion(selectedQuestionnaireId, newQuestion.trim());
+      setNewQuestion('');
+      // Refresh questionnaire data
+      const questions = await getQuestionsWithResponses(selectedQuestionnaireId);
+      setQuestionnaireData(questions);
+    } catch (error) {
+      console.error('Error adding question:', error);
+      alert('Failed to add question');
+    }
+  };
+
+  const handleSubmitAnswer = async (questionId: string) => {
+    if (!answerText.trim() || !user) return;
+
+    try {
+      const currentUserUuid = clerkIdToUuid(user.id);
+      await addResponse(questionId, currentUserUuid, answerText.trim());
+      setAnswerText('');
+      setAnsweringQuestionId(null);
+      // Refresh questionnaire data
+      if (selectedQuestionnaireId) {
+        const questions = await getQuestionsWithResponses(selectedQuestionnaireId);
+        setQuestionnaireData(questions);
+      }
+    } catch (error) {
+      console.error('Error submitting answer:', error);
+      alert('Failed to submit answer');
+    }
+  };
+
+  // Effect to load questionnaires when patient detail modal opens
+  useEffect(() => {
+    if (isDetailModalOpen && selectedPatient) {
+      fetchPatientQuestionnaires(selectedPatient.id);
+    }
+  }, [isDetailModalOpen, selectedPatient]);
+
+  // Handler for questionnaire notifications
+  const handleQuestionnaireNotificationClick = async (patientId: string, questionnaireId: string) => {
+    try {
+      // First, try to find the patient in local state
+      let patient = patients.find(p => p.id === patientId);
+      
+      // If not found locally, fetch from database
+      if (!patient) {
+        console.log('Patient not found in local state, fetching from database...');
+        patient = await getPatientById(patientId);
+        
+        // Add to local state to avoid future fetches
+        if (patient) {
+          setPatients(prev => [patient!, ...prev]);
+        }
+      }
+      
+      if (patient) {
+        // Open patient detail modal
+        setSelectedPatient(patient);
+        setIsDetailModalOpen(true);
+        // Wait a bit for the modal to open and questionnaires to load
+        setTimeout(() => {
+          // Open the specific questionnaire
+          handleOpenQuestionnaire(questionnaireId);
+        }, 500);
+      } else {
+        // This should rarely happen, but handle it gracefully
+        alert('Unable to load patient information. The patient may have been deleted.');
+      }
+    } catch (error) {
+      console.error('Error loading patient from notification:', error);
+      alert('Failed to load patient information. Please try again.');
+    }
+  };
+
   return (
     <LoadScript
       googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""}
@@ -198,7 +365,7 @@ export default function PatientsECMOs() {
       <div className="space-y-6">
         {/* Notification Bell and Add Patient Button */}
         <div className="flex justify-end items-center gap-3">
-          <NotificationBell />
+          <NotificationBell onQuestionnaireNotificationClick={handleQuestionnaireNotificationClick} />
           
           <button
             onClick={() => setIsModalOpen(true)}
@@ -726,6 +893,62 @@ export default function PatientsECMOs() {
                   </div>
                 )}
 
+                {/* Questionnaires Section */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                      <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Patient Questionnaires
+                    </h3>
+                    <button
+                      onClick={() => setIsQuestionnaireModalOpen(true)}
+                      className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm font-medium flex items-center gap-1"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                      Share New
+                    </button>
+                  </div>
+
+                  {loadingQuestionnaires ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+                    </div>
+                  ) : patientQuestionnaires.length > 0 ? (
+                    <div className="space-y-2">
+                      {patientQuestionnaires.map((q) => (
+                        <button
+                          key={q.id}
+                          onClick={() => handleOpenQuestionnaire(q.id)}
+                          className="w-full bg-blue-50 border border-blue-200 rounded-lg p-3 hover:bg-blue-100 transition-colors text-left"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="font-medium text-gray-800">{q.title}</p>
+                              <p className="text-xs text-gray-500 mt-1">
+                                Created by {q.profiles?.full_name || q.profiles?.username || 'Unknown'} • {new Date(q.created_at).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="bg-gray-50 rounded-lg p-6 text-center text-gray-500">
+                      <svg className="mx-auto h-8 w-8 text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <p className="text-sm">No questionnaires shared yet</p>
+                    </div>
+                  )}
+                </div>
+
                 {/* Actions */}
                 <div className="flex gap-3 pt-4 border-t border-gray-200">
                   <button
@@ -749,6 +972,240 @@ export default function PatientsECMOs() {
                   </button>
                 </div>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Create Questionnaire Modal */}
+        {isQuestionnaireModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6 relative">
+              <button
+                onClick={() => {
+                  setIsQuestionnaireModalOpen(false);
+                  setQuestionnaireTitle('');
+                }}
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+
+              <h3 className="text-2xl font-semibold text-gray-800 mb-4">
+                Share Questionnaire
+              </h3>
+
+              <p className="text-sm text-gray-600 mb-4">
+                Create and share a questionnaire with all users for patient: <strong>{selectedPatient?.name}</strong>
+              </p>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Questionnaire Title *
+                  </label>
+                  <input
+                    type="text"
+                    value={questionnaireTitle}
+                    onChange={(e) => setQuestionnaireTitle(e.target.value)}
+                    placeholder="e.g., Pre-Transfer Assessment"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex gap-2">
+                    <svg className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div className="text-sm text-blue-800">
+                      <p className="font-medium mb-1">What happens next:</p>
+                      <ul className="list-disc list-inside space-y-1">
+                        <li>All registered users will receive a notification</li>
+                        <li>Users can view the questionnaire from this patient profile</li>
+                        <li>Anyone can add questions and provide answers</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={() => {
+                    setIsQuestionnaireModalOpen(false);
+                    setQuestionnaireTitle('');
+                  }}
+                  disabled={creatingQuestionnaire}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleCreateQuestionnaire}
+                  disabled={!questionnaireTitle.trim() || creatingQuestionnaire}
+                  className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {creatingQuestionnaire ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      Sharing...
+                    </>
+                  ) : (
+                    'Share with All Users'
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* View Questionnaire Modal */}
+        {selectedQuestionnaireId && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 relative">
+              <button
+                onClick={() => {
+                  setSelectedQuestionnaireId(null);
+                  setQuestionnaireData(null);
+                  setNewQuestion('');
+                  setAnsweringQuestionId(null);
+                  setAnswerText('');
+                }}
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors z-10"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+
+              <div className="bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-300 rounded-xl p-6 shadow-lg mb-6">
+                <div className="flex items-center gap-2 mb-2">
+                  <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <h3 className="text-xl font-bold text-gray-800">
+                    {patientQuestionnaires.find(q => q.id === selectedQuestionnaireId)?.title || 'Questionnaire'}
+                  </h3>
+                </div>
+                <p className="text-sm text-gray-600">
+                  Patient: <strong>{selectedPatient?.name}</strong>
+                </p>
+              </div>
+
+              {loadingQuestionnaireData ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+                </div>
+              ) : (
+                <>
+                  {/* Add Question Section */}
+                  <div className="bg-white border border-gray-300 rounded-lg p-4 mb-6">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Add Your Question
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={newQuestion}
+                        onChange={(e) => setNewQuestion(e.target.value)}
+                        placeholder="Type your question here..."
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter' && newQuestion.trim()) {
+                            handleAddQuestion();
+                          }
+                        }}
+                      />
+                      <button
+                        onClick={handleAddQuestion}
+                        disabled={!newQuestion.trim()}
+                        className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Add
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Questions List */}
+                  {questionnaireData && questionnaireData.length > 0 ? (
+                    <div className="space-y-4">
+                      <h4 className="font-semibold text-gray-800">Questions:</h4>
+                      {questionnaireData.map((q: any) => (
+                        <div key={q.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                          <p className="font-medium text-gray-800 mb-2">{q.question_text}</p>
+
+                          {q.responses && q.responses.length > 0 ? (
+                            <div className="bg-green-50 border border-green-200 rounded-lg p-3 mt-3">
+                              <p className="text-sm font-medium text-green-800 mb-2">Responses</p>
+                              <div className="space-y-2">
+                                {q.responses.map((r: any) => (
+                                  <div key={r.id} className="text-gray-700">
+                                    <p className="text-sm">{r.response_text}</p>
+                                    {r.profiles && (
+                                      <p className="text-xs text-gray-500 mt-1">
+                                        By {r.profiles.full_name || r.profiles.username || 'Unknown'}
+                                      </p>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="mt-2 text-sm text-gray-500 italic">
+                              No responses yet
+                            </div>
+                          )}
+
+                          {/* Answer input */}
+                          {answeringQuestionId === q.id ? (
+                            <div className="mt-3">
+                              <textarea
+                                value={answerText}
+                                onChange={(e) => setAnswerText(e.target.value)}
+                                placeholder="Type your answer..."
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                rows={3}
+                              />
+                              <div className="flex gap-2 mt-2">
+                                <button
+                                  onClick={() => handleSubmitAnswer(q.id)}
+                                  disabled={!answerText.trim()}
+                                  className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors disabled:opacity-50"
+                                >
+                                  Submit Answer
+                                </button>
+                                <button
+                                  onClick={() => { setAnsweringQuestionId(null); setAnswerText(''); }}
+                                  className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg transition-colors"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => setAnsweringQuestionId(q.id)}
+                              className="mt-3 text-sm text-purple-600 hover:text-purple-700 font-medium"
+                            >
+                              Answer this question
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="bg-white border border-gray-200 rounded-lg p-8 text-center text-gray-500">
+                      <svg className="mx-auto h-10 w-10 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <p>No questions yet</p>
+                      <p className="text-xs text-gray-400 mt-1">Add a question above to get started</p>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           </div>
         )}

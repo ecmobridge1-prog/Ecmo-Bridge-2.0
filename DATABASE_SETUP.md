@@ -198,3 +198,25 @@ Generate TypeScript types from your schema:
 ```bash
 npx supabase gen types typescript --project-id YOUR_PROJECT_ID > src/types/database.ts
 ```
+
+## Database Migrations
+
+### Patient Questionnaire Feature Migration
+
+Run these SQL commands in your Supabase SQL Editor to add support for patient-specific questionnaires:
+
+```sql
+-- Add patient_id to questionnaires table to link questionnaires to patients
+ALTER TABLE questionnaires 
+ADD COLUMN patient_id UUID REFERENCES patients(id) ON DELETE CASCADE;
+
+-- Add notification type and questionnaire_id to notifications table
+ALTER TABLE notifications 
+ADD COLUMN notification_type VARCHAR(50) DEFAULT 'patient',
+ADD COLUMN questionnaire_id UUID REFERENCES questionnaires(id) ON DELETE CASCADE;
+
+-- Create index for better performance
+CREATE INDEX idx_questionnaires_patient ON questionnaires(patient_id);
+CREATE INDEX idx_notifications_type ON notifications(notification_type);
+CREATE INDEX idx_notifications_questionnaire ON notifications(questionnaire_id);
+```

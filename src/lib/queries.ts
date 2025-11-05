@@ -685,6 +685,26 @@ export async function getAllPatients() {
 }
 
 /**
+ * Get a single patient by ID
+ * @param patientId - The patient's UUID
+ * @returns The patient data
+ */
+export async function getPatientById(patientId: string) {
+  const { data, error } = await supabase
+    .from('patients')
+    .select('*')
+    .eq('id', patientId)
+    .single();
+
+  if (error) {
+    console.error('Error fetching patient by ID:', error);
+    throw error;
+  }
+
+  return data;
+}
+
+/**
  * Delete a patient by ID
  * Also deletes all associated notifications
  * @param patientId - The patient's UUID
@@ -736,7 +756,11 @@ export async function getUserNotifications(clerkUserId: string) {
       id,
       message,
       created_at,
+      notification_type,
+      patient_id,
+      questionnaire_id,
       patients!patient_id (
+        id,
         name
       )
     `)
@@ -768,4 +792,109 @@ export async function clearUserNotifications(clerkUserId: string) {
     console.error('Error clearing notifications:', error);
     throw error;
   }
+}
+
+// ============================================
+// PATIENT QUESTIONNAIRE QUERIES
+// ============================================
+
+/**
+ * Create a questionnaire linked to a specific patient
+ * @param patientId - The patient's UUID
+ * @param creatorUserId - The creator's UUID
+ * @param title - Questionnaire title
+ * @returns The created questionnaire
+ */
+export async function createPatientQuestionnaire(
+  patientId: string,
+  creatorUserId: string,
+  title: string
+) {
+  const { data, error } = await supabase
+    .from('questionnaires')
+    .insert([
+      {
+        patient_id: patientId,
+        opened_by_user_id: creatorUserId,
+        title: title
+      }
+    ])
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error creating patient questionnaire:', error);
+    throw error;
+  }
+
+  return data;
+}
+
+/**
+ * Get all questionnaires for a specific patient
+ * @param patientId - The patient's UUID
+ * @returns Array of questionnaires for the patient
+ */
+export async function getPatientQuestionnaires(patientId: string) {
+  const { data, error } = await supabase
+    .from('questionnaires')
+    .select(`
+      id,
+      title,
+      patient_id,
+      opened_by_user_id,
+      created_at,
+      profiles:opened_by_user_id (
+        id,
+        username,
+        full_name
+      )
+    `)
+    .eq('patient_id', patientId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching patient questionnaires:', error);
+    throw error;
+  }
+
+  return data;
+}
+
+/**
+ * Send notifications to all users about a new questionnaire
+ * @param message - Notification message
+ * @param patientId - The patient's UUID
+ * @param questionnaireId - The questionnaire's UUID
+ * @param notificationType - Type of notification (default: 'questionnaire')
+ */
+export async function sendNotificationToAllUsers(
+  message: string,
+  patientId: string,
+  questionnaireId: string,
+  notificationType: string = 'questionnaire'
+) {
+  // Get all users
+  const allUsers = await getAllUsers();
+  
+  // Create notification records for each user
+  const notifications = allUsers.map((user) => ({
+    user_id: user.id,
+    message: message,
+    patient_id: patientId,
+    questionnaire_id: questionnaireId,
+    notification_type: notificationType
+  }));
+
+  const { data, error } = await supabase
+    .from('notifications')
+    .insert(notifications)
+    .select();
+
+  if (error) {
+    console.error('Error sending notifications to all users:', error);
+    throw error;
+  }
+
+  return data;
 }
