@@ -243,24 +243,24 @@ export default function Chat() {
     // Convert current user's Clerk ID to UUID for comparison
     const currentUserUuid = user ? clerkIdToUuid(user.id) : null;
     return (
-      <div className="flex flex-col h-[calc(100vh-8rem)] bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl">
+      <div className="flex flex-col h-[calc(100vh-8rem)] bg-[#1a1a1a] border border-gray-800 rounded-xl shadow-2xl">
         {/* Chat Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
+        <div className="flex items-center justify-between p-4 border-b border-gray-800">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setSelectedChat(null)}
-              className="text-gray-600 hover:text-gray-800 transition-colors"
+              className="text-gray-400 hover:text-gray-200 transition-colors"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
             <div>
-              <h2 className="text-xl font-semibold text-gray-800">
+              <h2 className="text-xl font-semibold text-gray-100">
                 {selectedChat.title}
               </h2>
               {selectedChat.is_group && (
-                <p className="text-sm text-gray-500">Group chat</p>
+                <p className="text-sm text-gray-400">Group chat</p>
               )}
             </div>
           </div>
@@ -270,16 +270,16 @@ export default function Chat() {
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
           {loadingMessages ? (
             <div className="flex items-center justify-center h-full">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
             </div>
           ) : messages.length === 0 ? (
-            <div className="flex items-center justify-center h-full text-gray-500">
+            <div className="flex items-center justify-center h-full text-gray-400">
               <div className="text-center">
-                <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="mx-auto h-12 w-12 text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
                 <p>No messages yet</p>
-                <p className="text-sm text-gray-400 mt-1">Start the conversation!</p>
+                <p className="text-sm text-gray-500 mt-1">Start the conversation!</p>
               </div>
             </div>
           ) : (
@@ -297,7 +297,7 @@ export default function Chat() {
                     className={`max-w-[70%] rounded-lg p-3 ${
                       isMyMessage
                         ? 'bg-purple-600 text-white'
-                        : 'bg-gray-200 text-gray-800'
+                        : 'bg-[#2a2a2a] text-gray-100 border border-gray-700'
                     }`}
                   >
                     {!isMyMessage && (
@@ -308,7 +308,7 @@ export default function Chat() {
                     <p>{message.content}</p>
                     <p
                       className={`text-xs mt-1 ${
-                        isMyMessage ? 'text-purple-200' : 'text-gray-500'
+                        isMyMessage ? 'text-purple-200' : 'text-gray-400'
                       }`}
                     >
                       {timeAgo}
@@ -321,7 +321,7 @@ export default function Chat() {
         </div>
 
         {/* Message Input Area */}
-        <div className="p-4 border-t border-gray-200">
+        <div className="p-4 border-t border-gray-800">
           <div className="flex gap-2">
             <input
               type="text"
@@ -330,12 +330,12 @@ export default function Chat() {
               onKeyPress={handleKeyPress}
               placeholder="Type a message..."
               disabled={sendingMessage}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 px-4 py-2 bg-[#2a2a2a] border border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed text-gray-100 placeholder-gray-500"
             />
             <button
               onClick={handleSendMessage}
               disabled={sendingMessage || !messageText.trim()}
-              className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-purple-900/50"
             >
               {sendingMessage ? (
                 <>
@@ -361,13 +361,13 @@ export default function Chat() {
   return (
     <div className="space-y-6">
       {/* Create New Chat Section */}
-      <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl p-6">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+      <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl shadow-2xl p-6">
+        <h2 className="text-2xl font-semibold text-gray-100 mb-4">
           Create New Chat
         </h2>
-        <button 
+        <button
           onClick={() => setIsModalOpen(true)}
-          className="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+          className="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 shadow-lg shadow-purple-900/50"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -378,12 +378,12 @@ export default function Chat() {
 
       {/* Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <div className="bg-[#1a1a1a] border border-gray-700 rounded-xl shadow-2xl max-w-md w-full p-6 relative">
             {/* Close button */}
             <button
               onClick={() => setIsModalOpen(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-200 transition-colors"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -391,13 +391,13 @@ export default function Chat() {
             </button>
 
             {/* Modal Header */}
-            <h3 className="text-2xl font-semibold text-gray-800 mb-6">
+            <h3 className="text-2xl font-semibold text-gray-100 mb-6">
               Create New Chat
             </h3>
 
             {/* Chat Name Input */}
             <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-400 mb-2">
                 Chat Name
               </label>
               <input
@@ -405,41 +405,41 @@ export default function Chat() {
                 value={chatName}
                 onChange={(e) => setChatName(e.target.value)}
                 placeholder="Enter chat name..."
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                className="w-full px-4 py-2 bg-[#2a2a2a] border border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-gray-100 placeholder-gray-500"
               />
             </div>
 
             {/* User Selection */}
             <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-400 mb-2">
                 Select Users
               </label>
-              <div className="border border-gray-300 rounded-lg max-h-48 overflow-y-auto">
+              <div className="border border-gray-700 rounded-lg max-h-48 overflow-y-auto bg-[#0f0f0f]">
                 {loadingUsers ? (
                   <div className="flex items-center justify-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
                   </div>
                 ) : users.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
+                  <div className="text-center py-8 text-gray-400">
                     <p>No users found</p>
                   </div>
                 ) : (
                   users.map((user) => (
                     <label
                       key={user.id}
-                      className="flex items-center px-4 py-3 hover:bg-purple-50 cursor-pointer transition-colors border-b border-gray-100 last:border-b-0"
+                      className="flex items-center px-4 py-3 hover:bg-[#2a2a2a] cursor-pointer transition-colors border-b border-gray-800 last:border-b-0"
                     >
                       <input
                         type="checkbox"
                         checked={selectedUsers.includes(user.id)}
                         onChange={() => toggleUserSelection(user.id)}
-                        className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                        className="w-4 h-4 text-purple-600 border-gray-600 rounded focus:ring-purple-500 bg-[#2a2a2a]"
                       />
                       <div className="ml-3">
-                        <p className="font-medium text-gray-800">
+                        <p className="font-medium text-gray-200">
                           {user.full_name || 'Unknown User'}
                         </p>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-gray-400">
                           @{user.username || 'no-username'}
                         </p>
                       </div>
@@ -447,7 +447,7 @@ export default function Chat() {
                   ))
                 )}
               </div>
-              <p className="text-sm text-gray-500 mt-2">
+              <p className="text-sm text-gray-400 mt-2">
                 {selectedUsers.length} user(s) selected
               </p>
             </div>
@@ -457,14 +457,14 @@ export default function Chat() {
               <button
                 onClick={() => setIsModalOpen(false)}
                 disabled={creatingChat}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-4 py-2 border border-gray-700 text-gray-300 rounded-lg hover:bg-gray-800 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Cancel
               </button>
               <button
                 onClick={handleCreateChat}
                 disabled={creatingChat || !chatName.trim() || selectedUsers.length === 0}
-                className="flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-purple-900/50"
               >
                 {creatingChat ? (
                   <>
@@ -482,23 +482,23 @@ export default function Chat() {
 
 
       {/* Your Chats Section */}
-      <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl p-6">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+      <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl shadow-2xl p-6">
+        <h2 className="text-2xl font-semibold text-gray-100 mb-4">
           Your Chats
         </h2>
-        
+
         <div className="space-y-3">
           {loadingChats ? (
             <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
             </div>
           ) : chats.length === 0 ? (
             <div className="text-center py-12">
-              <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="mx-auto h-12 w-12 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
               </svg>
-              <p className="mt-4 text-gray-500">No chats yet</p>
-              <p className="text-sm text-gray-400">Create a new chat to get started</p>
+              <p className="mt-4 text-gray-400">No chats yet</p>
+              <p className="text-sm text-gray-500">Create a new chat to get started</p>
             </div>
           ) : (
             chats.map((chat) => {
@@ -507,25 +507,25 @@ export default function Chat() {
                 <div
                   key={chat.id}
                   onClick={() => setSelectedChat(chat)}
-                  className="bg-gray-50 hover:bg-purple-50 border border-gray-200 rounded-lg p-4 cursor-pointer transition-all duration-200 hover:border-purple-300"
+                  className="bg-[#0f0f0f] hover:bg-[#2a2a2a] border border-gray-800 rounded-lg p-4 cursor-pointer transition-all duration-200 hover:border-purple-500/50"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <h3 className="font-medium text-gray-800">
+                        <h3 className="font-medium text-gray-200">
                           {chat.title}
                         </h3>
                         {chat.is_group && (
-                          <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded">
+                          <span className="text-xs bg-purple-500/20 text-purple-300 border border-purple-500/30 px-2 py-0.5 rounded">
                             Group
                           </span>
                         )}
                       </div>
-                      <p className="text-sm text-gray-500 mt-1">
+                      <p className="text-sm text-gray-400 mt-1">
                         Click to open chat
                       </p>
                     </div>
-                    <div className="text-xs text-gray-400">
+                    <div className="text-xs text-gray-500">
                       {timeAgo}
                     </div>
                   </div>

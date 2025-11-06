@@ -179,7 +179,7 @@ export default function PatientsECMOs() {
         <div className="flex justify-end items-center">
           <button
             onClick={() => setIsModalOpen(true)}
-            className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-medium flex items-center gap-2"
+            className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-medium flex items-center gap-2 shadow-lg shadow-purple-900/50"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -191,48 +191,48 @@ export default function PatientsECMOs() {
         {/* Split Layout */}
         <div className="flex gap-6 h-[calc(100vh-12rem)]">
           {/* Left Side - Patient Table */}
-          <div className="w-2/5 bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl overflow-hidden flex flex-col">
-            <div className="p-6 border-b border-gray-200">
-              <h3 className="text-xl font-semibold text-gray-800">Patient List</h3>
+          <div className="w-2/5 bg-[#1a1a1a] border border-gray-800 rounded-xl shadow-2xl overflow-hidden flex flex-col">
+            <div className="p-6 border-b border-gray-800">
+              <h3 className="text-xl font-semibold text-gray-100">Patient List</h3>
             </div>
 
             <div className="flex-1 overflow-auto">
               <table className="w-full text-sm">
-                <thead className="bg-gray-50 sticky top-0">
+                <thead className="bg-[#0f0f0f] sticky top-0">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                       Name
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                       DOB
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                       MRN
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                       Care Type
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                       ECMO Type
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                       Vitals
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-[#1a1a1a] divide-y divide-gray-800">
                   {loading ? (
                     <tr>
-                      <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
+                      <td colSpan={7} className="px-6 py-8 text-center text-gray-400">
                         Loading patients...
                       </td>
                     </tr>
                   ) : patients.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
+                      <td colSpan={7} className="px-6 py-8 text-center text-gray-400">
                         No patients found. Add your first patient using the button above.
                       </td>
                     </tr>
@@ -240,29 +240,29 @@ export default function PatientsECMOs() {
                     patients.map((patient, index) => (
                       <tr
                         key={patient.id}
-                        className={`hover:bg-purple-50 transition-colors ${
-                          index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                        className={`hover:bg-gray-800/50 transition-colors ${
+                          index % 2 === 0 ? 'bg-[#1a1a1a]' : 'bg-[#141414]'
                         }`}
                       >
                         <td className="px-4 py-3 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">{patient.name}</div>
+                          <div className="text-sm font-medium text-gray-100">{patient.name}</div>
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">
-                          <div className="text-xs text-gray-600">{patient.dob || '-'}</div>
+                          <div className="text-xs text-gray-400">{patient.dob || '-'}</div>
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">
-                          <div className="text-xs text-gray-600">{patient.mrn || '-'}</div>
+                          <div className="text-xs text-gray-400">{patient.mrn || '-'}</div>
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">
-                          <div className="text-xs text-gray-600">{patient.special_care}</div>
+                          <div className="text-xs text-gray-300">{patient.special_care}</div>
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">
-                          <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                          <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
                             {patient.type}
                           </span>
                         </td>
                         <td className="px-4 py-3">
-                          <div className="text-xs text-gray-600 space-y-1">
+                          <div className="text-xs text-gray-300 space-y-1">
                             {patient.pulse && <div>Pulse: {patient.pulse} bpm</div>}
                             {patient.bloodPressure && <div>BP: {patient.bloodPressure}</div>}
                             {patient.temperature && <div>Temp: {patient.temperature}°F</div>}
@@ -271,7 +271,7 @@ export default function PatientsECMOs() {
                         <td className="px-4 py-3 whitespace-nowrap">
                           <button
                             onClick={() => handleDeletePatient(patient.id, patient.name)}
-                            className="text-red-600 hover:text-red-900 transition-colors"
+                            className="text-red-400 hover:text-red-500 transition-colors"
                             title="Delete patient"
                           >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -288,9 +288,9 @@ export default function PatientsECMOs() {
           </div>
 
           {/* Right Side - Google Maps */}
-          <div className="w-3/5 bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl overflow-hidden flex flex-col">
-            <div className="p-6 border-b border-gray-200">
-              <h3 className="text-xl font-semibold text-gray-800">Patient Locations</h3>
+          <div className="w-3/5 bg-[#1a1a1a] border border-gray-800 rounded-xl shadow-2xl overflow-hidden flex flex-col">
+            <div className="p-6 border-b border-gray-800">
+              <h3 className="text-xl font-semibold text-gray-100">Patient Locations</h3>
             </div>
 
             <div className="flex-1">
@@ -328,12 +328,12 @@ export default function PatientsECMOs() {
 
         {/* Patient Intake Request Form Modal */}
         {isModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-            <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full p-8 relative border-2 border-blue-300">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+            <div className="bg-[#1a1a1a] border border-gray-700 rounded-xl shadow-2xl max-w-4xl w-full p-8 relative">
               {/* Close button */}
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-200 transition-colors"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -341,9 +341,9 @@ export default function PatientsECMOs() {
               </button>
 
               {/* Form Container */}
-              <div className="bg-gray-100 rounded-lg p-6">
+              <div className="bg-[#0f0f0f] border border-gray-800 rounded-lg p-6">
                 {/* Header */}
-                <h3 className="text-2xl font-semibold text-blue-800 text-center mb-8">
+                <h3 className="text-2xl font-semibold text-blue-400 text-center mb-8">
                   Patient Intake Request Form
                 </h3>
 
@@ -358,7 +358,7 @@ export default function PatientsECMOs() {
                           placeholder="First Name"
                           value={formData.firstName}
                           onChange={(e) => handleInputChange('firstName', e.target.value)}
-                          className="w-full px-3 py-2 bg-white border border-blue-400 rounded text-sm text-black"
+                          className="w-full px-3 py-2 bg-[#2a2a2a] border border-gray-700 rounded text-sm text-gray-100 placeholder-gray-500 focus:border-blue-500 focus:outline-none"
                         />
                       </div>
                       <div className="flex-1">
@@ -367,7 +367,7 @@ export default function PatientsECMOs() {
                           placeholder="Middle Name"
                           value={formData.middleName}
                           onChange={(e) => handleInputChange('middleName', e.target.value)}
-                          className="w-full px-3 py-2 bg-white border border-blue-400 rounded text-sm text-black"
+                          className="w-full px-3 py-2 bg-[#2a2a2a] border border-gray-700 rounded text-sm text-gray-100 placeholder-gray-500 focus:border-blue-500 focus:outline-none"
                         />
                       </div>
                       <div className="flex-1">
@@ -376,11 +376,11 @@ export default function PatientsECMOs() {
                           placeholder="Last Name"
                           value={formData.lastName}
                           onChange={(e) => handleInputChange('lastName', e.target.value)}
-                          className="w-full px-3 py-2 bg-white border border-blue-400 rounded text-sm text-black"
+                          className="w-full px-3 py-2 bg-[#2a2a2a] border border-gray-700 rounded text-sm text-gray-100 placeholder-gray-500 focus:border-blue-500 focus:outline-none"
                         />
                       </div>
                     </div>
-                    <label className="block text-sm text-gray-700 mt-1">Name</label>
+                    <label className="block text-sm text-gray-400 mt-1">Name</label>
                   </div>
 
                   {/* DOB */}
@@ -390,9 +390,9 @@ export default function PatientsECMOs() {
                       placeholder="mm/dd/year"
                       value={formData.dob}
                       onChange={(e) => handleInputChange('dob', e.target.value)}
-                      className="w-full px-3 py-2 bg-white border border-blue-400 rounded text-sm text-black"
+                      className="w-full px-3 py-2 bg-[#2a2a2a] border border-gray-700 rounded text-sm text-gray-100 placeholder-gray-500 focus:border-blue-500 focus:outline-none"
                     />
-                    <label className="block text-sm text-gray-700 mt-1">DOB</label>
+                    <label className="block text-sm text-gray-400 mt-1">DOB</label>
                   </div>
 
                   {/* MRN */}
@@ -402,9 +402,9 @@ export default function PatientsECMOs() {
                       placeholder="Medical Record #"
                       value={formData.mrn}
                       onChange={(e) => handleInputChange('mrn', e.target.value)}
-                      className="w-full px-3 py-2 bg-white border border-blue-400 rounded text-sm text-black"
+                      className="w-full px-3 py-2 bg-[#2a2a2a] border border-gray-700 rounded text-sm text-gray-100 placeholder-gray-500 focus:border-blue-500 focus:outline-none"
                     />
-                    <label className="block text-sm text-gray-700 mt-1">MRN</label>
+                    <label className="block text-sm text-gray-400 mt-1">MRN</label>
                   </div>
 
                   {/* Insurance */}
@@ -414,9 +414,9 @@ export default function PatientsECMOs() {
                       placeholder="Insurance Provider"
                       value={formData.insurance}
                       onChange={(e) => handleInputChange('insurance', e.target.value)}
-                      className="w-full px-3 py-2 bg-white border border-blue-400 rounded text-sm text-black"
+                      className="w-full px-3 py-2 bg-[#2a2a2a] border border-gray-700 rounded text-sm text-gray-100 placeholder-gray-500 focus:border-blue-500 focus:outline-none"
                     />
-                    <label className="block text-sm text-gray-700 mt-1">Insurance</label>
+                    <label className="block text-sm text-gray-400 mt-1">Insurance</label>
                   </div>
                 </div>
 
@@ -425,43 +425,43 @@ export default function PatientsECMOs() {
                   {/* Left Column */}
                   <div className="space-y-4">
                     <div className="flex items-center gap-3">
-                      <label className="text-sm text-gray-700 w-20">Weight</label>
+                      <label className="text-sm text-gray-400 w-32">Weight</label>
                       <input
                         type="text"
                         placeholder="lbs"
                         value={formData.weight}
                         onChange={(e) => handleInputChange('weight', e.target.value)}
-                        className="flex-1 px-3 py-2 bg-white border border-blue-400 rounded text-sm text-black"
+                        className="flex-1 px-3 py-2 bg-[#2a2a2a] border border-gray-700 rounded text-sm text-gray-100 placeholder-gray-500 focus:border-blue-500 focus:outline-none"
                       />
                     </div>
                     <div className="flex items-center gap-3">
-                      <label className="text-sm text-gray-700 w-20">Blood Pressure</label>
+                      <label className="text-sm text-gray-400 w-32">Blood Pressure</label>
                       <input
                         type="text"
                         placeholder="120/80"
                         value={formData.bloodPressure}
                         onChange={(e) => handleInputChange('bloodPressure', e.target.value)}
-                        className="flex-1 px-3 py-2 bg-white border border-blue-400 rounded text-sm text-black"
+                        className="flex-1 px-3 py-2 bg-[#2a2a2a] border border-gray-700 rounded text-sm text-gray-100 placeholder-gray-500 focus:border-blue-500 focus:outline-none"
                       />
                     </div>
                     <div className="flex items-center gap-3">
-                      <label className="text-sm text-gray-700 w-20">Temperature (F)</label>
+                      <label className="text-sm text-gray-400 w-32">Temperature (F)</label>
                       <input
                         type="text"
                         placeholder="98.6"
                         value={formData.temperature}
                         onChange={(e) => handleInputChange('temperature', e.target.value)}
-                        className="flex-1 px-3 py-2 bg-white border border-blue-400 rounded text-sm text-black"
+                        className="flex-1 px-3 py-2 bg-[#2a2a2a] border border-gray-700 rounded text-sm text-gray-100 placeholder-gray-500 focus:border-blue-500 focus:outline-none"
                       />
                     </div>
                     <div className="flex items-center gap-3">
-                      <label className="text-sm text-gray-700 w-20">Failure type</label>
+                      <label className="text-sm text-gray-400 w-32">Failure type</label>
                       <input
                         type="text"
                         placeholder="Respiratory/Cardiac"
                         value={formData.failureType}
                         onChange={(e) => handleInputChange('failureType', e.target.value)}
-                        className="flex-1 px-3 py-2 bg-white border border-blue-400 rounded text-sm text-black"
+                        className="flex-1 px-3 py-2 bg-[#2a2a2a] border border-gray-700 rounded text-sm text-gray-100 placeholder-gray-500 focus:border-blue-500 focus:outline-none"
                       />
                     </div>
                   </div>
@@ -469,33 +469,33 @@ export default function PatientsECMOs() {
                   {/* Right Column */}
                   <div className="space-y-4">
                     <div className="flex items-center gap-3">
-                      <label className="text-sm text-gray-700 w-20">Pulse</label>
+                      <label className="text-sm text-gray-400 w-32">Pulse</label>
                       <input
                         type="text"
                         placeholder="bpm"
                         value={formData.pulse}
                         onChange={(e) => handleInputChange('pulse', e.target.value)}
-                        className="flex-1 px-3 py-2 bg-white border border-blue-400 rounded text-sm text-black"
+                        className="flex-1 px-3 py-2 bg-[#2a2a2a] border border-gray-700 rounded text-sm text-gray-100 placeholder-gray-500 focus:border-blue-500 focus:outline-none"
                       />
                     </div>
                     <div className="flex items-center gap-3">
-                      <label className="text-sm text-gray-700 w-20">Respiration rate</label>
+                      <label className="text-sm text-gray-400 w-32">Respiration rate</label>
                       <input
                         type="text"
                         placeholder="respirations per minute"
                         value={formData.respirationRate}
                         onChange={(e) => handleInputChange('respirationRate', e.target.value)}
-                        className="flex-1 px-3 py-2 bg-white border border-blue-400 rounded text-sm text-black"
+                        className="flex-1 px-3 py-2 bg-[#2a2a2a] border border-gray-700 rounded text-sm text-gray-100 placeholder-gray-500 focus:border-blue-500 focus:outline-none"
                       />
                     </div>
                     <div className="flex items-center gap-3">
-                      <label className="text-sm text-gray-700 w-20">Pulse oximetry</label>
+                      <label className="text-sm text-gray-400 w-32">Pulse oximetry</label>
                       <input
                         type="text"
                         placeholder="%"
                         value={formData.pulseOximetry}
                         onChange={(e) => handleInputChange('pulseOximetry', e.target.value)}
-                        className="flex-1 px-3 py-2 bg-white border border-blue-400 rounded text-sm text-black"
+                        className="flex-1 px-3 py-2 bg-[#2a2a2a] border border-gray-700 rounded text-sm text-gray-100 placeholder-gray-500 focus:border-blue-500 focus:outline-none"
                       />
                     </div>
                   </div>
@@ -504,41 +504,41 @@ export default function PatientsECMOs() {
                 {/* Existing Fields */}
                 <div className="grid grid-cols-2 gap-6 mb-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-400 mb-2">
                       Special Care
                     </label>
                     <select
                       value={formData.specialCare}
                       onChange={(e) => handleInputChange('specialCare', e.target.value)}
-                      className="w-full px-4 py-2 bg-white border border-blue-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-black"
+                      className="w-full px-4 py-2 bg-[#2a2a2a] border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-100"
                     >
-                      <option value="">Select care type...</option>
-                      <option value="ICU">ICU</option>
-                      <option value="CCU">CCU</option>
-                      <option value="General Ward">General Ward</option>
-                      <option value="Emergency">Emergency</option>
+                      <option value="" className="bg-[#2a2a2a]">Select care type...</option>
+                      <option value="ICU" className="bg-[#2a2a2a]">ICU</option>
+                      <option value="CCU" className="bg-[#2a2a2a]">CCU</option>
+                      <option value="General Ward" className="bg-[#2a2a2a]">General Ward</option>
+                      <option value="Emergency" className="bg-[#2a2a2a]">Emergency</option>
                     </select>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-400 mb-2">
                       ECMO Type
                     </label>
                     <select
                       value={formData.type}
                       onChange={(e) => handleInputChange('type', e.target.value)}
-                      className="w-full px-4 py-2 bg-white border border-blue-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-black"
+                      className="w-full px-4 py-2 bg-[#2a2a2a] border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-100"
                     >
-                      <option value="">Select ECMO type...</option>
-                      <option value="VA ECMO">VA ECMO</option>
-                      <option value="VV ECMO">VV ECMO</option>
+                      <option value="" className="bg-[#2a2a2a]">Select ECMO type...</option>
+                      <option value="VA ECMO" className="bg-[#2a2a2a]">VA ECMO</option>
+                      <option value="VV ECMO" className="bg-[#2a2a2a]">VV ECMO</option>
                     </select>
                   </div>
                 </div>
 
                 {/* Location */}
                 <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-400 mb-2">
                     Location
                   </label>
                   <Autocomplete
@@ -559,11 +559,11 @@ export default function PatientsECMOs() {
                     <input
                       type="text"
                       placeholder="Search for an address..."
-                      className="w-full px-4 py-2 bg-white border border-blue-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-black"
+                      className="w-full px-4 py-2 bg-[#2a2a2a] border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-100 placeholder-gray-500 focus:outline-none"
                     />
                   </Autocomplete>
                   {selectedLocation && (
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-gray-400 mt-1">
                       Selected: {selectedLocation.address}
                     </p>
                   )}
@@ -571,7 +571,7 @@ export default function PatientsECMOs() {
 
                 {/* Notes */}
                 <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-400 mb-2">
                     Notes
                   </label>
                   <textarea
@@ -579,7 +579,7 @@ export default function PatientsECMOs() {
                     value={formData.notes}
                     onChange={(e) => handleInputChange('notes', e.target.value)}
                     rows={4}
-                    className="w-full px-4 py-2 bg-white border border-blue-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none text-black"
+                    className="w-full px-4 py-2 bg-[#2a2a2a] border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none text-gray-100 placeholder-gray-500 focus:outline-none"
                   />
                 </div>
 
@@ -588,7 +588,7 @@ export default function PatientsECMOs() {
                   <button
                     onClick={handleFormSubmit}
                     disabled={submitting}
-                    className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg transition-colors font-medium"
+                    className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg transition-colors font-medium shadow-lg shadow-blue-900/50"
                   >
                     {submitting ? 'Sending...' : 'Send Request'}
                   </button>

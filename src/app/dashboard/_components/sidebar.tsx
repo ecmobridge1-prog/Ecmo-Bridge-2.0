@@ -76,45 +76,45 @@ export default function Sidebar({ activeSection, onSectionChange }: SidebarProps
   ];
 
   return (
-    <div className="w-64 bg-white/95 backdrop-blur-sm shadow-lg min-h-screen pt-20 fixed left-0 top-0">
+    <div className="w-64 bg-[#1a1a1a] border-r border-gray-800 shadow-lg min-h-screen pt-20 fixed left-0 top-0">
       <div className="p-6">
-        <h2 className="text-xl font-bold text-gray-800 mb-6">Dashboard</h2>
+        <h2 className="text-xl font-bold text-gray-100 mb-6">Dashboard</h2>
         
         {/* ECMO Status Section */}
-        <div className="mb-6 pb-6 border-b border-gray-200">
+        <div className="mb-6 pb-6 border-b border-gray-700">
           {/* Instructions */}
           <div className="mb-4">
-            <p className="text-xs text-gray-600 mb-3">
+            <p className="text-xs text-gray-400 mb-3">
               Toggle if your hospital has ECMO machines available.
             </p>
           </div>
-          
+
           {/* ECMO Status Card */}
-          <div 
+          <div
             className={`p-3 rounded-lg border-2 transition-all duration-300 ${
-              hasECMO 
-                ? 'bg-emerald-50 border-emerald-500' 
-                : 'bg-gray-50 border-gray-300'
+              hasECMO
+                ? 'bg-emerald-500/10 border-emerald-500/50'
+                : 'bg-gray-800 border-gray-700'
             }`}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <span className="text-xl">🏥</span>
                 <span className={`text-sm font-medium ${
-                  hasECMO ? 'text-emerald-700' : 'text-gray-600'
+                  hasECMO ? 'text-emerald-400' : 'text-gray-400'
                 }`}>
                   ECMO Available
                 </span>
               </div>
-              
+
               {/* Toggle Switch */}
               <button
                 onClick={handleEcmoToggle}
                 disabled={loading}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-                  hasECMO 
-                    ? 'bg-emerald-600 focus:ring-emerald-500' 
-                    : 'bg-gray-400 focus:ring-gray-300'
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#1a1a1a] ${
+                  hasECMO
+                    ? 'bg-emerald-600 focus:ring-emerald-500'
+                    : 'bg-gray-600 focus:ring-gray-500'
                 } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                 role="switch"
                 aria-checked={hasECMO}
@@ -127,10 +127,10 @@ export default function Sidebar({ activeSection, onSectionChange }: SidebarProps
                 />
               </button>
             </div>
-            
+
             {/* Status Text */}
             <p className={`mt-2 text-xs ${
-              hasECMO ? 'text-emerald-600' : 'text-gray-500'
+              hasECMO ? 'text-emerald-400/80' : 'text-gray-500'
             }`}>
               {hasECMO ? 'Your hospital has ECMO machines' : 'No ECMO machines available'}
             </p>
@@ -145,7 +145,7 @@ export default function Sidebar({ activeSection, onSectionChange }: SidebarProps
               className={`w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center space-x-3 ${
                 activeSection === section.id
                   ? 'bg-purple-600 text-white shadow-md'
-                  : 'text-gray-700 hover:bg-purple-100 hover:text-purple-600'
+                  : 'text-gray-300 hover:bg-gray-800 hover:text-purple-400'
               }`}
             >
               <span className="flex-shrink-0">

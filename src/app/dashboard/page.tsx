@@ -84,9 +84,9 @@ export default function Dashboard() {
   // Show loading state while verifying NPI
   if (isVerifying) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-purple-900 via-purple-600 to-purple-400 flex items-center justify-center">
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
         <div className="text-white text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
           <p className="text-lg">Verifying access...</p>
         </div>
       </div>
@@ -94,17 +94,17 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-900 via-purple-600 to-purple-400">
+    <div className="min-h-screen bg-[#0a0a0a]">
       <UserSync />
       <Sidebar activeSection={activeSection} onSectionChange={setActiveSection} />
-      
+
       {/* Notification Bell - Top Right */}
       <div className="fixed top-6 right-8 z-50">
         <NotificationBell />
       </div>
-      
+
       <main className="ml-64 pt-20 px-8 py-12">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           {renderContent()}
         </div>
       </main>

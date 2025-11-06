@@ -3,15 +3,12 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --background: #050112;
+  --foreground: #f8fafc;
+  --font-base: "Onest Variable", "Segoe UI", -apple-system, BlinkMacSystemFont,
+    "Helvetica Neue", sans-serif;
+  --font-mono: "JetBrains Mono", "SFMono-Regular", Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
 }
 
 html,
@@ -23,9 +20,10 @@ body {
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-base);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
 }
 
 * {
@@ -37,6 +35,39 @@ body {
 a {
   color: inherit;
   text-decoration: none;
+}
+
+:where(h1, h2, h3, h4) {
+  font-family: var(--font-base);
+}
+
+:where(code, pre, kbd, samp) {
+  font-family: var(--font-mono);
+}
+
+@keyframes auroraDrift {
+  0% {
+    transform: translate3d(var(--x1, -8%), var(--y1, -10%), 0)
+      scale(var(--scale, 0.9));
+    opacity: var(--o1, 0.4);
+  }
+  50% {
+    transform: translate3d(var(--x2, 10%), var(--y2, 8%), 0)
+      scale(calc(var(--scale, 0.9) * var(--scale-bump, 1.2)));
+    opacity: var(--o2, 0.85);
+  }
+  100% {
+    transform: translate3d(var(--x3, -6%), var(--y3, -12%), 0)
+      scale(var(--scale, 0.9));
+    opacity: var(--o3, 0.55);
+  }
+}
+
+.aurora-bubble {
+  filter: blur(160px);
+  mix-blend-mode: lighten;
+  will-change: transform, opacity;
+  animation: auroraDrift var(--duration, 28s) ease-in-out infinite alternate;
 }
 
 @media (prefers-color-scheme: dark) {
