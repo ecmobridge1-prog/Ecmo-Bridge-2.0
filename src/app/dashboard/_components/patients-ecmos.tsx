@@ -4,7 +4,14 @@ import React from "react";
 import { useState, useEffect } from "react";
 import { GoogleMap, LoadScript, Autocomplete, Marker, InfoWindow, OverlayView } from "@react-google-maps/api";
 import { useUser } from "@clerk/nextjs";
-import { getAllPatients, createPatient, deletePatient } from "@/lib/queries";
+import { 
+  getAllPatients, 
+  getPatientById,
+  createPatient, 
+  deletePatient,
+  getQuestionnairesByPatient,
+  getQuestionsWithResponses
+} from "@/lib/queries";
 import { clerkIdToUuid } from "@/lib/utils";
 import NotificationBell from "./notification-bell";
 
@@ -59,6 +66,12 @@ export default function PatientsECMOs() {
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
+  // Questionnaire state
+  const [patientQuestionnaires, setPatientQuestionnaires] = useState<any[]>([]);
+  const [loadingQuestionnaires, setLoadingQuestionnaires] = useState(false);
+  const [selectedQuestionnaireId, setSelectedQuestionnaireId] = useState<string | null>(null);
+  const [questionnaireData, setQuestionnaireData] = useState<any>(null);
+  const [loadingQuestionnaireData, setLoadingQuestionnaireData] = useState(false);
   // Hospital data and state
   const hospitals = [
     { name: "Chandler Regional Medical Center", address: "1955 W. Frye Rd, Chandler, 85224, AZ, United States" },
@@ -261,6 +274,40 @@ export default function PatientsECMOs() {
       alert('Error deleting patient. Please try again.');
     }
   };
+
+  // Questionnaire handlers
+  const fetchPatientQuestionnaires = async (patientId: string) => {
+    try {
+      setLoadingQuestionnaires(true);
+      const questionnaires = await getQuestionnairesByPatient(patientId);
+      setPatientQuestionnaires(questionnaires || []);
+    } catch (error) {
+      console.error('Error fetching patient questionnaires:', error);
+    } finally {
+      setLoadingQuestionnaires(false);
+    }
+  };
+
+  const handleOpenQuestionnaire = async (questionnaireId: string) => {
+    try {
+      setLoadingQuestionnaireData(true);
+      setSelectedQuestionnaireId(questionnaireId);
+      const questions = await getQuestionsWithResponses(questionnaireId);
+      setQuestionnaireData(questions);
+    } catch (error) {
+      console.error('Error loading questionnaire:', error);
+      alert('Failed to load questionnaire');
+    } finally {
+      setLoadingQuestionnaireData(false);
+    }
+  };
+
+  // Effect to load questionnaires when patient detail modal opens
+  useEffect(() => {
+    if (isDetailModalOpen && selectedPatient) {
+      fetchPatientQuestionnaires(selectedPatient.id);
+    }
+  }, [isDetailModalOpen, selectedPatient]);
 
   return (
     <LoadScript
@@ -911,6 +958,54 @@ export default function PatientsECMOs() {
                   </div>
                 )}
 
+                {/* Questionnaires Section */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                      <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Patient Questionnaires
+                    </h3>
+                  </div>
+
+                  {loadingQuestionnaires ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+                    </div>
+                  ) : patientQuestionnaires.length > 0 ? (
+                    <div className="space-y-2">
+                      {patientQuestionnaires.map((q) => (
+                        <button
+                          key={q.id}
+                          onClick={() => handleOpenQuestionnaire(q.id)}
+                          className="w-full bg-blue-50 border border-blue-200 rounded-lg p-3 hover:bg-blue-100 transition-colors text-left"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="font-medium text-gray-800">{q.title}</p>
+                              <p className="text-xs text-gray-500 mt-1">
+                                Created by {q.profiles?.full_name || q.profiles?.username || 'Unknown'} • {new Date(q.created_at).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="bg-gray-50 rounded-lg p-6 text-center text-gray-500">
+                      <svg className="mx-auto h-8 w-8 text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <p className="text-sm">No questionnaires found</p>
+                      <p className="text-xs text-gray-400 mt-1">Questionnaires from chats regarding this patient will appear here</p>
+                    </div>
+                  )}
+                </div>
+
                 {/* Actions */}
                 <div className="flex gap-3 pt-4 border-t border-gray-200">
                   <button
@@ -934,6 +1029,101 @@ export default function PatientsECMOs() {
                   </button>
                 </div>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* View Questionnaire Modal */}
+        {selectedQuestionnaireId && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 relative">
+              <button
+                onClick={() => {
+                  setSelectedQuestionnaireId(null);
+                  setQuestionnaireData(null);
+                }}
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors z-10"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+
+              <div className="bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-300 rounded-xl p-6 shadow-lg mb-6">
+                <div className="flex items-center gap-2 mb-2">
+                  <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <h3 className="text-xl font-bold text-gray-800">
+                    {patientQuestionnaires.find(q => q.id === selectedQuestionnaireId)?.title || 'Questionnaire'}
+                  </h3>
+                </div>
+                <p className="text-sm text-gray-600">
+                  Patient: <strong>{selectedPatient?.name}</strong>
+                </p>
+              </div>
+
+              {loadingQuestionnaireData ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+                </div>
+              ) : (
+                <>
+                  {/* Read-only notice */}
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-6">
+                    <div className="flex items-center gap-2">
+                      <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <p className="text-sm text-blue-800">
+                        <span className="font-medium">Read-only view:</span> Questions and answers from all chats regarding this patient.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Questions List */}
+                  {questionnaireData && questionnaireData.length > 0 ? (
+                    <div className="space-y-4">
+                      <h4 className="font-semibold text-gray-800">Questions:</h4>
+                      {questionnaireData.map((q: any) => (
+                        <div key={q.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                          <p className="font-medium text-gray-800 mb-2">{q.question_text}</p>
+
+                          {q.responses && q.responses.length > 0 ? (
+                            <div className="bg-green-50 border border-green-200 rounded-lg p-3 mt-3">
+                              <p className="text-sm font-medium text-green-800 mb-2">Responses</p>
+                              <div className="space-y-2">
+                                {q.responses.map((r: any) => (
+                                  <div key={r.id} className="text-gray-700">
+                                    <p className="text-sm">{r.response_text}</p>
+                                    {r.profiles && (
+                                      <p className="text-xs text-gray-500 mt-1">
+                                        By {r.profiles.full_name || r.profiles.username || 'Unknown'}
+                                      </p>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="mt-2 text-sm text-gray-500 italic">
+                              No responses yet
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="bg-white border border-gray-200 rounded-lg p-8 text-center text-gray-500">
+                      <svg className="mx-auto h-10 w-10 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <p>No questions yet</p>
+                      <p className="text-xs text-gray-400 mt-1">This questionnaire doesn't have any questions yet</p>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           </div>
         )}

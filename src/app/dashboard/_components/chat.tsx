@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
-import { getAllUsers, createChatWithMembers, getUserChats, getChatMessages, sendMessage, leaveChatMember, getChatMembers, createQuestionnaire, sendQuestionnaireMessage, getQuestionnaireById, getQuestionsWithResponses, addQuestion, addResponse } from "@/lib/queries";
+import { getAllUsers, getAllPatients, createChatWithMembers, getUserChats, getChatMessages, sendMessage, leaveChatMember, getChatMembers, createQuestionnaire, sendQuestionnaireMessage, getQuestionnaireById, getQuestionsWithResponses, addQuestion, addResponse } from "@/lib/queries";
 import { clerkIdToUuid } from "@/lib/utils";
 
 // Helper function to get time ago
@@ -27,11 +27,32 @@ interface User {
   full_name: string | null;
 }
 
+interface Patient {
+  id: string;
+  name: string;
+  first_name?: string;
+  middle_name?: string;
+  last_name?: string;
+  dob?: string;
+  mrn?: string;
+  insurance?: string;
+  special_care: string;
+  type: string;
+  latitude: number;
+  longitude: number;
+  created_at: string;
+}
+
 interface Chat {
   id: string;
   title: string;
   is_group: boolean;
   created_at: string;
+  patient_id?: string;
+  patients?: {
+    id: string;
+    name: string;
+  } | null;
 }
 
 interface Message {
@@ -78,6 +99,9 @@ export default function Chat() {
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [loadingPatients, setLoadingPatients] = useState(false);
+  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
   const [chatName, setChatName] = useState("");
   const [creatingChat, setCreatingChat] = useState(false);
   const [chats, setChats] = useState<Chat[]>([]);
@@ -132,6 +156,13 @@ export default function Chat() {
   useEffect(() => {
     if (isModalOpen && users.length === 0) {
       fetchUsers();
+    }
+  }, [isModalOpen]);
+
+  // Fetch all patients when modal opens
+  useEffect(() => {
+    if (isModalOpen && patients.length === 0) {
+      fetchPatients();
     }
   }, [isModalOpen]);
   // Load questionnaire data when a questionnaire is opened
@@ -195,6 +226,18 @@ export default function Chat() {
       console.error('Error fetching users:', error);
     } finally {
       setLoadingUsers(false);
+    }
+  };
+
+  const fetchPatients = async () => {
+    setLoadingPatients(true);
+    try {
+      const allPatients = await getAllPatients();
+      setPatients(allPatients);
+    } catch (error) {
+      console.error('Error fetching patients:', error);
+    } finally {
+      setLoadingPatients(false);
     }
   };
 
@@ -317,6 +360,11 @@ export default function Chat() {
       return;
     }
 
+    if (!selectedPatientId) {
+      alert('Please select a patient');
+      return;
+    }
+
     if (selectedUsers.length === 0) {
       alert('Please select at least one user');
       return;
@@ -326,12 +374,13 @@ export default function Chat() {
     try {
       // Convert Clerk ID to UUID format
       const currentUserUuid = clerkIdToUuid(user.id);
-      await createChatWithMembers(chatName, selectedUsers, currentUserUuid);
+      await createChatWithMembers(chatName, selectedPatientId!, selectedUsers, currentUserUuid);
       
       // Success! Close modal and reset form
       setIsModalOpen(false);
       setChatName("");
       setSelectedUsers([]);
+      setSelectedPatientId(null);
       
       // Refresh chat list
       await fetchUserChats();
@@ -417,31 +466,26 @@ export default function Chat() {
               <h2 className="text-xl font-semibold text-gray-800">
                 {selectedChat.title}
               </h2>
-              {selectedChat.is_group ? (
-                <div className="text-sm text-gray-500 space-y-0.5">
+              {selectedChat.patients?.name ? (
+                <div className="text-sm text-gray-600 mt-1">
+                  <span className="font-medium">Patient:</span>{' '}
+                  <span className="font-semibold text-gray-800">{selectedChat.patients.name}</span>
+                </div>
+              ) : selectedChat.patient_id ? (
+                <div className="text-sm text-gray-500 mt-1">
+                  <span className="font-medium">Patient:</span> Unknown
+                </div>
+              ) : null}
+              {selectedChat.is_group && (
+                <div className="text-sm text-gray-500 mt-1 space-y-0.5">
                   <div>
-                    <span className="font-medium">Patients:</span>{' '}
+                    <span className="font-medium">Doctors:</span>{' '}
                     {chatMembers
                       .filter(m => m.id !== currentUserUuid)
                       .map(m => m.full_name || m.username || 'Unknown')
                       .join(', ') || 'None'}
                   </div>
-                  <div>
-                    <span className="font-medium">Physician:</span>{' '}
-                    {chatMembers.find(m => m.id === currentUserUuid)?.full_name || 
-                     chatMembers.find(m => m.id === currentUserUuid)?.username || 
-                     'You'}
-                  </div>
                 </div>
-              ) : (
-                chatMembers.filter(m => m.id !== currentUserUuid).length > 0 && (
-                  <p className="text-sm text-gray-500">
-                    <span className="font-medium">Patient:</span>{' '}
-                    {chatMembers.filter(m => m.id !== currentUserUuid)[0]?.full_name || 
-                     chatMembers.filter(m => m.id !== currentUserUuid)[0]?.username || 
-                     'Unknown'}
-                  </p>
-                )
               )}
             </div>
           </div>
@@ -852,7 +896,10 @@ export default function Chat() {
           <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 relative">
             {/* Close button */}
             <button
-              onClick={() => setIsModalOpen(false)}
+              onClick={() => {
+                setIsModalOpen(false);
+                setSelectedPatientId(null);
+              }}
               className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -879,10 +926,39 @@ export default function Chat() {
               />
             </div>
 
-            {/* Patient Selection */}
+            {/* Patient Selection (Which patient this chat is regarding) */}
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Select Patients
+                Select Patient <span className="text-red-500">*</span>
+              </label>
+              {loadingPatients ? (
+                <div className="flex items-center justify-center py-8 border border-gray-300 rounded-lg">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+                </div>
+              ) : patients.length === 0 ? (
+                <div className="text-center py-8 text-gray-500 border border-gray-300 rounded-lg">
+                  <p>No patients found</p>
+                </div>
+              ) : (
+                <select
+                  value={selectedPatientId || ''}
+                  onChange={(e) => setSelectedPatientId(e.target.value || null)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                >
+                  <option value="">-- Select a patient --</option>
+                  {patients.map((patient) => (
+                    <option key={patient.id} value={patient.id}>
+                      {patient.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+
+            {/* User Selection (Select users to add to chat) */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Select Users to Add
               </label>
               <div className="border border-gray-300 rounded-lg max-h-48 overflow-y-auto">
                 {loadingUsers ? (
@@ -925,7 +1001,10 @@ export default function Chat() {
             {/* Action Buttons */}
             <div className="flex gap-3">
               <button
-                onClick={() => setIsModalOpen(false)}
+                onClick={() => {
+                  setIsModalOpen(false);
+                  setSelectedPatientId(null);
+                }}
                 disabled={creatingChat}
                 className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -933,7 +1012,7 @@ export default function Chat() {
               </button>
               <button
                 onClick={handleCreateChat}
-                disabled={creatingChat || !chatName.trim() || selectedUsers.length === 0}
+                disabled={creatingChat || !chatName.trim() || !selectedPatientId || selectedUsers.length === 0}
                 className="flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {creatingChat ? (
@@ -993,6 +1072,15 @@ export default function Chat() {
                           </span>
                         )}
                       </div>
+                      {chat.patients?.name ? (
+                        <p className="text-sm text-gray-600 mt-1">
+                          Patient: <span className="font-medium">{chat.patients.name}</span>
+                        </p>
+                      ) : chat.patient_id ? (
+                        <p className="text-sm text-gray-500 mt-1">
+                          Patient: Unknown
+                        </p>
+                      ) : null}
                       <p className="text-sm text-gray-500 mt-1">
                         Click to open chat
                       </p>

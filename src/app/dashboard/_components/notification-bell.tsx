@@ -10,9 +10,11 @@ interface Notification {
   id: string;
   message: string;
   created_at: string;
+  patient_id?: string;
   patients: {
+    id: string;
     name: string;
-  }[] | null;
+  } | null;
 }
 
 // Helper function to format relative time
@@ -228,46 +230,48 @@ export default function NotificationBell() {
                 <p className="text-gray-500 text-sm">Loading notifications...</p>
               </div>
             ) : notifications.length > 0 ? (
-              notifications.map((notification) => (
-                <div
-                  key={notification.id}
-                  className="px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0 cursor-pointer"
-                >
-                  <div className="flex items-start space-x-3">
-                    {/* Icon */}
-                    <div className="flex-shrink-0 mt-1">
-                      <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-                        <svg
-                          className="w-4 h-4 text-purple-600"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                          />
-                        </svg>
+              notifications.map((notification) => {
+                return (
+                  <div
+                    key={notification.id}
+                    className="px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0"
+                  >
+                    <div className="flex items-start space-x-3">
+                      {/* Icon */}
+                      <div className="flex-shrink-0 mt-1">
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center bg-purple-100">
+                          <svg
+                            className="w-4 h-4 text-purple-600"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                            />
+                          </svg>
+                        </div>
+                      </div>
+
+                      {/* Content */}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-gray-800 mb-1">
+                          🔔 New Patient Added
+                        </p>
+                        <p className="text-sm text-gray-600 mb-1">
+                          {notification.message}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {formatRelativeTime(notification.created_at)}
+                        </p>
                       </div>
                     </div>
-
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-800 mb-1">
-                        🔔 New Patient Added
-                      </p>
-                      <p className="text-sm text-gray-600 mb-1">
-                        {notification.message}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {formatRelativeTime(notification.created_at)}
-                      </p>
-                    </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             ) : (
               // Empty State
               <div className="px-4 py-8 text-center">

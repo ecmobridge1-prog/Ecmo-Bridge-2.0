@@ -155,15 +155,17 @@ export async function getAllUsers() {
 /**
  * Create a new chat
  * @param title - Chat title/name
+ * @param patientId - The patient ID this chat is regarding (required)
  * @param isGroup - Whether this is a group chat
  * @returns The newly created chat
  */
-export async function createChat(title: string, isGroup: boolean = false) {
+export async function createChat(title: string, patientId: string, isGroup: boolean = false) {
   const { data, error } = await supabase
     .from('chats')
     .insert([
       {
         title: title,
+        patient_id: patientId,
         is_group: isGroup,
       },
     ])
@@ -207,11 +209,13 @@ export async function addChatMembers(chatId: string, memberIds: string[]) {
 /**
  * Create a chat with members in one transaction
  * @param title - Chat title
+ * @param patientId - The patient ID this chat is regarding (required)
  * @param memberIds - Array of user IDs to add to the chat
  * @param currentUserId - The ID of the user creating the chat (will be added automatically)
  */
 export async function createChatWithMembers(
   title: string,
+  patientId: string,
   memberIds: string[],
   currentUserId: string
 ) {
@@ -220,7 +224,7 @@ export async function createChatWithMembers(
     const isGroup = memberIds.length > 1;
 
     // Create the chat
-    const newChat = await createChat(title, isGroup);
+    const newChat = await createChat(title, patientId, isGroup);
 
     // Add all members including the creator
     const allMemberIds = [...new Set([currentUserId, ...memberIds])]; // Remove duplicates
@@ -236,7 +240,7 @@ export async function createChatWithMembers(
 /**
  * Get all chats for a specific user
  * @param userId - The user's UUID
- * @returns Array of chats the user is a member of
+ * @returns Array of chats the user is a member of, including patient information
  */
 export async function getUserChats(userId: string) {
   const { data, error } = await supabase
@@ -247,7 +251,12 @@ export async function getUserChats(userId: string) {
         id,
         title,
         is_group,
-        created_at
+        created_at,
+        patient_id,
+        patients:patient_id (
+          id,
+          name
+        )
       )
     `)
     .eq('user_id', userId)
@@ -685,6 +694,26 @@ export async function getAllPatients() {
 }
 
 /**
+ * Get a single patient by ID
+ * @param patientId - The patient's UUID
+ * @returns The patient data
+ */
+export async function getPatientById(patientId: string) {
+  const { data, error } = await supabase
+    .from('patients')
+    .select('*')
+    .eq('id', patientId)
+    .single();
+
+  if (error) {
+    console.error('Error fetching patient by ID:', error);
+    throw error;
+  }
+
+  return data;
+}
+
+/**
  * Delete a patient by ID
  * Also deletes all associated notifications
  * @param patientId - The patient's UUID
@@ -736,7 +765,9 @@ export async function getUserNotifications(clerkUserId: string) {
       id,
       message,
       created_at,
+      patient_id,
       patients!patient_id (
+        id,
         name
       )
     `)
@@ -747,8 +778,14 @@ export async function getUserNotifications(clerkUserId: string) {
     console.error('Error fetching user notifications:', error);
     throw error;
   }
-
-  return data;
+  
+  // Transform the data to ensure patients is a single object or null, not an array
+  return (data || []).map((notification: any) => ({
+    ...notification,
+    patients: Array.isArray(notification.patients) 
+      ? (notification.patients[0] || null)
+      : notification.patients
+  }));
 }
 
 /**
@@ -766,6 +803,67 @@ export async function clearUserNotifications(clerkUserId: string) {
 
   if (error) {
     console.error('Error clearing notifications:', error);
+    throw error;
+  }
+}
+
+// ============================================
+// PATIENT QUESTIONNAIRE QUERIES
+// ============================================
+
+/**
+ * Get all questionnaires for a specific patient
+ * This function gets all questionnaires from all chats that reference the patient
+ * @param patientId - The patient's UUID
+ * @returns Array of questionnaires for the patient
+ */
+export async function getQuestionnairesByPatient(patientId: string) {
+  try {
+    // Step 1: Get all chats for this patient
+    const { data: chats, error: chatsError } = await supabase
+      .from('chats')
+      .select('id')
+      .eq('patient_id', patientId);
+
+    if (chatsError) {
+      console.error('Error fetching chats for patient:', chatsError);
+      throw chatsError;
+    }
+
+    // If no chats found, return empty array
+    if (!chats || chats.length === 0) {
+      return [];
+    }
+
+    // Extract chat IDs
+    const chatIds = chats.map(chat => chat.id);
+
+    // Step 2: Get all questionnaires for these chats
+    const { data: questionnaires, error: questionnairesError } = await supabase
+      .from('questionnaires')
+      .select(`
+        id,
+        title,
+        chat_id,
+        opened_by_user_id,
+        created_at,
+        profiles:opened_by_user_id (
+          id,
+          username,
+          full_name
+        )
+      `)
+      .in('chat_id', chatIds)
+      .order('created_at', { ascending: false });
+
+    if (questionnairesError) {
+      console.error('Error fetching questionnaires for patient:', questionnairesError);
+      throw questionnairesError;
+    }
+
+    return questionnaires || [];
+  } catch (error) {
+    console.error('Error in getQuestionnairesByPatient:', error);
     throw error;
   }
 }
