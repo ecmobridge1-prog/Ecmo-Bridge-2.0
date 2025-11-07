@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useState, useEffect } from "react";
-import { GoogleMap, LoadScript, Autocomplete, Marker } from "@react-google-maps/api";
+import { GoogleMap, LoadScript, Autocomplete, Marker, InfoWindow, OverlayView } from "@react-google-maps/api";
 import { useUser } from "@clerk/nextjs";
 import { 
   getAllPatients, 
@@ -96,6 +96,54 @@ export default function PatientsECMOs() {
   // Fetch patients on component mount
   useEffect(() => {
     fetchPatients();
+  }, []);
+
+  // Geocode hospital addresses on component mount
+  useEffect(() => {
+    const geocodeHospitals = async () => {
+      const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+      if (!apiKey) {
+        console.error('Google Maps API key not found');
+        return;
+      }
+
+      const geocodedHospitals = await Promise.all(
+        hospitals.map(async (hospital) => {
+          try {
+            const response = await fetch(
+              `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
+                hospital.address
+              )}&key=${apiKey}`
+            );
+            const data = await response.json();
+            
+            if (data.results && data.results.length > 0) {
+              const location = data.results[0].geometry.location;
+              return {
+                name: hospital.name,
+                address: hospital.address,
+                lat: location.lat,
+                lng: location.lng,
+              };
+            }
+            return null;
+          } catch (error) {
+            console.error(`Error geocoding ${hospital.name}:`, error);
+            return null;
+          }
+        })
+      );
+
+      // Filter out any null results and update state
+      setHospitalLocations(geocodedHospitals.filter((h) => h !== null) as Array<{
+        name: string;
+        address: string;
+        lat: number;
+        lng: number;
+      }>);
+    };
+
+    geocodeHospitals();
   }, []);
 
   const fetchPatients = async () => {
@@ -350,6 +398,7 @@ export default function PatientsECMOs() {
                   fullscreenControl: true,
                 }}
               >
+                {/* Patient Markers - Blue Pin Shape */}
                 {patients.map((patient) => (
                   <Marker
                     key={patient.id}
@@ -357,15 +406,127 @@ export default function PatientsECMOs() {
                       lat: patient.latitude,
                       lng: patient.longitude
                     }}
-                    title={patient.name}
-                    label={{
-                      text: patient.name,
-                      color: '#7C3AED',
-                      fontSize: '12px',
-                      fontWeight: 'bold'
+                    icon={{
+                      path: "M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z",
+                      fillColor: '#3B82F6',
+                      fillOpacity: 1,
+                      strokeColor: '#2563EB',
+                      strokeWeight: 2,
+                      scale: 0.75,
+                      anchor: new google.maps.Point(0, 0),
                     }}
+                    onMouseOver={() => setHoveredPatient(patient.id)}
+                    onMouseOut={() => setHoveredPatient(null)}
+                    onClick={() => setPinnedPatient(patient.id)}
                   />
                 ))}
+
+                {/* Hospital Markers - Red Pins (Larger than Google's) */}
+                {hospitalLocations.map((hospital, index) => (
+                  <Marker
+                    key={`hospital-${index}`}
+                    position={{
+                      lat: hospital.lat,
+                      lng: hospital.lng
+                    }}
+                    title={hospital.name}
+                    icon={{
+                      path: "M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z",
+                      fillColor: '#EA4335',
+                      fillOpacity: 0.95,
+                      strokeColor: '#FFFFFF',
+                      strokeWeight: 2,
+                      scale: 1.0,
+                      anchor: new google.maps.Point(0, 0),
+                    }}
+                    label={{
+                      text: 'H',
+                      color: '#FFFFFF',
+                      fontSize: '16px',
+                      fontWeight: 'bold',
+                    }}
+                    onMouseOver={() => setSelectedHospital(index)}
+                    onMouseOut={() => setSelectedHospital(null)}
+                    onClick={() => setPinnedHospital(index)}
+                  />
+                ))}
+
+                {/* OverlayView for hovered or pinned patient */}
+                {(() => {
+                  const displayPatientId = pinnedPatient || hoveredPatient;
+                  const displayPatient = displayPatientId ? patients.find(p => p.id === displayPatientId) : null;
+                  const isPinned = pinnedPatient !== null;
+                  
+                  return displayPatient ? (
+                    <OverlayView
+                      position={{
+                        lat: displayPatient.latitude,
+                        lng: displayPatient.longitude
+                      }}
+                      mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
+                    >
+                      <div className="relative" style={{ transform: 'translate(-50%, -100%)', marginTop: '-10px' }}>
+                        <div className="bg-white rounded-lg shadow-lg px-3 py-2 relative min-w-[150px]">
+                          {isPinned && (
+                            <button
+                              onClick={() => {
+                                setPinnedPatient(null);
+                                setHoveredPatient(null);
+                              }}
+                              className="absolute -top-2 -right-2 bg-white rounded-full w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 text-xl leading-none shadow-md border border-gray-200"
+                            >
+                              ×
+                            </button>
+                          )}
+                          <p className="font-semibold text-gray-800 text-sm">
+                            {displayPatient.name}
+                          </p>
+                        </div>
+                        <div className="absolute left-1/2 -translate-x-1/2 -bottom-2 w-0 h-0 border-l-8 border-r-8 border-t-8 border-transparent border-t-white" style={{ filter: 'drop-shadow(0 2px 2px rgba(0,0,0,0.1))' }}></div>
+                      </div>
+                    </OverlayView>
+                  ) : null;
+                })()}
+
+                {/* OverlayView for hovered or pinned hospital */}
+                {(() => {
+                  const displayHospitalIndex = pinnedHospital !== null ? pinnedHospital : selectedHospital;
+                  const displayHospital = displayHospitalIndex !== null ? hospitalLocations[displayHospitalIndex] : null;
+                  const isPinned = pinnedHospital !== null;
+                  
+                  return displayHospital ? (
+                    <OverlayView
+                      position={{
+                        lat: displayHospital.lat,
+                        lng: displayHospital.lng
+                      }}
+                      mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
+                    >
+                      <div className="relative" style={{ transform: 'translate(-50%, -100%)', marginTop: '-10px' }}>
+                        <div className="bg-white rounded-lg shadow-lg px-3 py-2 relative min-w-[200px]">
+                          {isPinned && (
+                            <button
+                              onClick={() => {
+                                setPinnedHospital(null);
+                                setSelectedHospital(null);
+                              }}
+                              className="absolute -top-2 -right-2 bg-white rounded-full w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 text-xl leading-none shadow-md border border-gray-200"
+                            >
+                              ×
+                            </button>
+                          )}
+                          <h4 className="font-semibold text-gray-800 text-sm mb-1">
+                            {displayHospital.name}
+                          </h4>
+                          <p className="text-xs text-gray-600">
+                            {displayHospital.address}
+                          </p>
+                        </div>
+                        <div className="absolute left-1/2 -translate-x-1/2 -bottom-2 w-0 h-0 border-l-8 border-r-8 border-t-8 border-transparent border-t-white" style={{ filter: 'drop-shadow(0 2px 2px rgba(0,0,0,0.1))' }}></div>
+                      </div>
+                    </OverlayView>
+                  ) : null;
+                })()}
               </GoogleMap>
             </div>
           </div>
