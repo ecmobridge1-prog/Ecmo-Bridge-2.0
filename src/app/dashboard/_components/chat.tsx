@@ -479,7 +479,7 @@ export default function Chat() {
               {selectedChat.is_group && (
                 <div className="text-sm text-gray-500 mt-1 space-y-0.5">
                   <div>
-                    <span className="font-medium">Members:</span>{' '}
+                    <span className="font-medium">Doctors:</span>{' '}
                     {chatMembers
                       .filter(m => m.id !== currentUserUuid)
                       .map(m => m.full_name || m.username || 'Unknown')
