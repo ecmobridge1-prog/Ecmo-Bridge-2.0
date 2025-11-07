@@ -44,3 +44,20 @@ a {
     color-scheme: dark;
   }
 }
+
+/* Hide default Google Maps InfoWindow close button */
+.gm-style .gm-style-iw-c button.gm-ui-hover-effect {
+  display: none !important;
+}
+
+.gm-style .gm-style-iw button[aria-label="Close"] {
+  display: none !important;
+}
+
+.gm-style-iw-d {
+  overflow: visible !important;
+}
+
+.gm-style .gm-style-iw-t::after {
+  display: none;
+}
