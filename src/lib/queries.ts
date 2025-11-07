@@ -155,15 +155,17 @@ export async function getAllUsers() {
 /**
  * Create a new chat
  * @param title - Chat title/name
+ * @param patientId - The patient ID this chat is regarding (required)
  * @param isGroup - Whether this is a group chat
  * @returns The newly created chat
  */
-export async function createChat(title: string, isGroup: boolean = false) {
+export async function createChat(title: string, patientId: string, isGroup: boolean = false) {
   const { data, error } = await supabase
     .from('chats')
     .insert([
       {
         title: title,
+        patient_id: patientId,
         is_group: isGroup,
       },
     ])
@@ -207,11 +209,13 @@ export async function addChatMembers(chatId: string, memberIds: string[]) {
 /**
  * Create a chat with members in one transaction
  * @param title - Chat title
+ * @param patientId - The patient ID this chat is regarding (required)
  * @param memberIds - Array of user IDs to add to the chat
  * @param currentUserId - The ID of the user creating the chat (will be added automatically)
  */
 export async function createChatWithMembers(
   title: string,
+  patientId: string,
   memberIds: string[],
   currentUserId: string
 ) {
@@ -220,7 +224,7 @@ export async function createChatWithMembers(
     const isGroup = memberIds.length > 1;
 
     // Create the chat
-    const newChat = await createChat(title, isGroup);
+    const newChat = await createChat(title, patientId, isGroup);
 
     // Add all members including the creator
     const allMemberIds = [...new Set([currentUserId, ...memberIds])]; // Remove duplicates
@@ -236,7 +240,7 @@ export async function createChatWithMembers(
 /**
  * Get all chats for a specific user
  * @param userId - The user's UUID
- * @returns Array of chats the user is a member of
+ * @returns Array of chats the user is a member of, including patient information
  */
 export async function getUserChats(userId: string) {
   const { data, error } = await supabase
@@ -247,7 +251,12 @@ export async function getUserChats(userId: string) {
         id,
         title,
         is_group,
-        created_at
+        created_at,
+        patient_id,
+        patients:patient_id (
+          id,
+          name
+        )
       )
     `)
     .eq('user_id', userId)
@@ -756,9 +765,7 @@ export async function getUserNotifications(clerkUserId: string) {
       id,
       message,
       created_at,
-      notification_type,
       patient_id,
-      questionnaire_id,
       patients!patient_id (
         id,
         name
@@ -771,7 +778,7 @@ export async function getUserNotifications(clerkUserId: string) {
     console.error('Error fetching user notifications:', error);
     throw error;
   }
-
+  
   return data;
 }
 
@@ -799,102 +806,58 @@ export async function clearUserNotifications(clerkUserId: string) {
 // ============================================
 
 /**
- * Create a questionnaire linked to a specific patient
- * @param patientId - The patient's UUID
- * @param creatorUserId - The creator's UUID
- * @param title - Questionnaire title
- * @returns The created questionnaire
- */
-export async function createPatientQuestionnaire(
-  patientId: string,
-  creatorUserId: string,
-  title: string
-) {
-  const { data, error } = await supabase
-    .from('questionnaires')
-    .insert([
-      {
-        patient_id: patientId,
-        opened_by_user_id: creatorUserId,
-        title: title
-      }
-    ])
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error creating patient questionnaire:', error);
-    throw error;
-  }
-
-  return data;
-}
-
-/**
  * Get all questionnaires for a specific patient
+ * This function gets all questionnaires from all chats that reference the patient
  * @param patientId - The patient's UUID
  * @returns Array of questionnaires for the patient
  */
-export async function getPatientQuestionnaires(patientId: string) {
-  const { data, error } = await supabase
-    .from('questionnaires')
-    .select(`
-      id,
-      title,
-      patient_id,
-      opened_by_user_id,
-      created_at,
-      profiles:opened_by_user_id (
+export async function getQuestionnairesByPatient(patientId: string) {
+  try {
+    // Step 1: Get all chats for this patient
+    const { data: chats, error: chatsError } = await supabase
+      .from('chats')
+      .select('id')
+      .eq('patient_id', patientId);
+
+    if (chatsError) {
+      console.error('Error fetching chats for patient:', chatsError);
+      throw chatsError;
+    }
+
+    // If no chats found, return empty array
+    if (!chats || chats.length === 0) {
+      return [];
+    }
+
+    // Extract chat IDs
+    const chatIds = chats.map(chat => chat.id);
+
+    // Step 2: Get all questionnaires for these chats
+    const { data: questionnaires, error: questionnairesError } = await supabase
+      .from('questionnaires')
+      .select(`
         id,
-        username,
-        full_name
-      )
-    `)
-    .eq('patient_id', patientId)
-    .order('created_at', { ascending: false });
+        title,
+        chat_id,
+        opened_by_user_id,
+        created_at,
+        profiles:opened_by_user_id (
+          id,
+          username,
+          full_name
+        )
+      `)
+      .in('chat_id', chatIds)
+      .order('created_at', { ascending: false });
 
-  if (error) {
-    console.error('Error fetching patient questionnaires:', error);
+    if (questionnairesError) {
+      console.error('Error fetching questionnaires for patient:', questionnairesError);
+      throw questionnairesError;
+    }
+
+    return questionnaires || [];
+  } catch (error) {
+    console.error('Error in getQuestionnairesByPatient:', error);
     throw error;
   }
-
-  return data;
-}
-
-/**
- * Send notifications to all users about a new questionnaire
- * @param message - Notification message
- * @param patientId - The patient's UUID
- * @param questionnaireId - The questionnaire's UUID
- * @param notificationType - Type of notification (default: 'questionnaire')
- */
-export async function sendNotificationToAllUsers(
-  message: string,
-  patientId: string,
-  questionnaireId: string,
-  notificationType: string = 'questionnaire'
-) {
-  // Get all users
-  const allUsers = await getAllUsers();
-  
-  // Create notification records for each user
-  const notifications = allUsers.map((user) => ({
-    user_id: user.id,
-    message: message,
-    patient_id: patientId,
-    questionnaire_id: questionnaireId,
-    notification_type: notificationType
-  }));
-
-  const { data, error } = await supabase
-    .from('notifications')
-    .insert(notifications)
-    .select();
-
-  if (error) {
-    console.error('Error sending notifications to all users:', error);
-    throw error;
-  }
-
-  return data;
 }
