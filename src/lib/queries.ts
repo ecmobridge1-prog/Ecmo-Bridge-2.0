@@ -779,7 +779,13 @@ export async function getUserNotifications(clerkUserId: string) {
     throw error;
   }
   
-  return data;
+  // Transform the data to ensure patients is a single object or null, not an array
+  return (data || []).map((notification: any) => ({
+    ...notification,
+    patients: Array.isArray(notification.patients) 
+      ? (notification.patients[0] || null)
+      : notification.patients
+  }));
 }
 
 /**
