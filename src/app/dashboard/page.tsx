@@ -80,8 +80,15 @@ export default function Dashboard() {
   // Show loading state while verifying NPI
   if (isVerifying) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-purple-900 via-purple-600 to-purple-400 flex items-center justify-center">
-        <div className="text-white text-center">
+      <div className="min-h-screen animated-gradient flex items-center justify-center relative overflow-hidden">
+        <div className="floating-particles">
+          <div className="particle"></div>
+          <div className="particle"></div>
+          <div className="particle"></div>
+          <div className="particle"></div>
+          <div className="particle"></div>
+        </div>
+        <div className="text-white text-center relative z-10">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
           <p className="text-lg">Verifying access...</p>
         </div>
@@ -90,10 +97,17 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-900 via-purple-600 to-purple-400">
+    <div className="min-h-screen animated-gradient relative overflow-hidden">
+      <div className="floating-particles">
+        <div className="particle"></div>
+        <div className="particle"></div>
+        <div className="particle"></div>
+        <div className="particle"></div>
+        <div className="particle"></div>
+      </div>
       <UserSync />
       <Sidebar activeSection={activeSection} onSectionChange={setActiveSection} />
-      <main className="ml-64 pt-20 px-8 py-12">
+      <main className="ml-64 pt-20 px-8 py-12 relative z-10">
         <div className="max-w-6xl mx-auto">
           {renderContent()}
         </div>

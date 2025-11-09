@@ -3,8 +3,11 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #000000;
+  --foreground: #ededed;
+  --primary-dark: #0a0412;
+  --secondary-dark: #0f0820;
+  --accent: #6b21a8;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -60,4 +63,395 @@ a {
 
 .gm-style .gm-style-iw-t::after {
   display: none;
+}
+
+/* Animated Background - Microsoft Style */
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes jellyfishFloat {
+  0%, 100% {
+    transform: translateY(0px) translateX(0px) scale(1);
+  }
+  25% {
+    transform: translateY(-60px) translateX(30px) scale(1.15);
+  }
+  50% {
+    transform: translateY(-120px) translateX(-20px) scale(0.95);
+  }
+  75% {
+    transform: translateY(-60px) translateX(40px) scale(1.1);
+  }
+}
+
+@keyframes shootingStar {
+  0% {
+    transform: translateX(0) translateY(0) rotate(-45deg);
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-300px) translateY(300px) rotate(-45deg);
+    opacity: 0;
+  }
+}
+
+@keyframes twinkle {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+@keyframes jellyfishPulse {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scaleY(1);
+  }
+  25% {
+    opacity: 0.5;
+    transform: scaleY(1.1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scaleY(1);
+  }
+  75% {
+    opacity: 0.5;
+    transform: scaleY(1.05);
+  }
+}
+
+@keyframes jellyfishMorphing {
+  0%, 100% {
+    border-radius: 50% 50% 40% 40% / 60% 60% 40% 40%;
+  }
+  25% {
+    border-radius: 45% 55% 50% 50% / 55% 60% 45% 50%;
+  }
+  50% {
+    border-radius: 55% 45% 45% 55% / 60% 50% 50% 60%;
+  }
+  75% {
+    border-radius: 50% 50% 55% 45% / 50% 55% 60% 45%;
+  }
+}
+
+@keyframes jellyfishGlow {
+  0%, 100% {
+    box-shadow:
+      0 0 30px rgba(107, 33, 168, 0.4),
+      0 0 60px rgba(107, 33, 168, 0.2),
+      0 100px 80px rgba(107, 33, 168, 0.15);
+  }
+  50% {
+    box-shadow:
+      0 0 50px rgba(107, 33, 168, 0.6),
+      0 0 100px rgba(107, 33, 168, 0.3),
+      0 120px 100px rgba(107, 33, 168, 0.2);
+  }
+}
+
+.animated-gradient {
+  background: #000000;
+  position: relative;
+}
+
+.animated-gradient::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image:
+    radial-gradient(circle at 20% 50%, rgba(138, 43, 226, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(107, 33, 168, 0.06) 0%, transparent 50%),
+    radial-gradient(circle at 40% 20%, rgba(74, 20, 140, 0.05) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.animated-gradient::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.015) 0px, transparent 1px, transparent 2px, rgba(255, 255, 255, 0.015) 3px),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.015) 0px, transparent 1px, transparent 2px, rgba(255, 255, 255, 0.015) 3px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.floating-particles {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.particle {
+  position: absolute;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(138, 43, 226, 0.7) 0%,
+    rgba(107, 33, 168, 0.5) 30%,
+    rgba(107, 33, 168, 0.2) 60%,
+    transparent 100%
+  );
+  animation:
+    jellyfishFloat 16s cubic-bezier(0.4, 0, 0.2, 1) infinite,
+    jellyfishPulse 5s cubic-bezier(0.4, 0, 0.2, 1) infinite,
+    jellyfishMorphing 10s cubic-bezier(0.4, 0, 0.2, 1) infinite,
+    jellyfishGlow 8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  filter: blur(25px);
+}
+
+.star {
+  position: absolute;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 1) 0%,
+    rgba(200, 180, 255, 0.8) 30%,
+    transparent 70%
+  );
+  border-radius: 50%;
+  animation: twinkle 3s ease-in-out infinite;
+}
+
+.shooting-star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: linear-gradient(
+    -45deg,
+    rgba(255, 255, 255, 1) 0%,
+    rgba(255, 255, 255, 0.8) 30%,
+    transparent 100%
+  );
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+  animation: shootingStar 2s linear infinite;
+}
+
+.particle::after {
+  content: '';
+  position: absolute;
+  bottom: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 150px;
+  background: linear-gradient(
+    to bottom,
+    rgba(107, 33, 168, 0.25) 0%,
+    rgba(107, 33, 168, 0.1) 40%,
+    transparent 100%
+  );
+  filter: blur(20px);
+  animation: jellyfishPulse 3s ease-in-out infinite;
+}
+
+.particle:nth-child(1) {
+  width: 180px;
+  height: 180px;
+  left: 10%;
+  top: 80%;
+  animation-delay: 0s, 0s, 0s, 0s;
+}
+
+.particle:nth-child(2) {
+  width: 140px;
+  height: 140px;
+  left: 70%;
+  top: 85%;
+  animation-delay: 2s, 0.5s, 1s, 0.8s;
+}
+
+.particle:nth-child(3) {
+  width: 220px;
+  height: 220px;
+  left: 40%;
+  top: 75%;
+  animation-delay: 4s, 1s, 2s, 1.5s;
+}
+
+.particle:nth-child(4) {
+  width: 160px;
+  height: 160px;
+  left: 80%;
+  top: 90%;
+  animation-delay: 1s, 1.5s, 0.5s, 2s;
+}
+
+.particle:nth-child(5) {
+  width: 200px;
+  height: 200px;
+  left: 25%;
+  top: 95%;
+  animation-delay: 3s, 2s, 3s, 1s;
+}
+
+/* Twinkling Stars */
+.star:nth-child(6) {
+  width: 3px;
+  height: 3px;
+  left: 10%;
+  top: 15%;
+  animation-delay: 0s;
+}
+
+.star:nth-child(7) {
+  width: 2px;
+  height: 2px;
+  left: 25%;
+  top: 25%;
+  animation-delay: 0.5s;
+}
+
+.star:nth-child(8) {
+  width: 4px;
+  height: 4px;
+  left: 40%;
+  top: 10%;
+  animation-delay: 1s;
+}
+
+.star:nth-child(9) {
+  width: 2px;
+  height: 2px;
+  left: 55%;
+  top: 20%;
+  animation-delay: 1.5s;
+}
+
+.star:nth-child(10) {
+  width: 3px;
+  height: 3px;
+  left: 70%;
+  top: 12%;
+  animation-delay: 2s;
+}
+
+.star:nth-child(11) {
+  width: 2px;
+  height: 2px;
+  left: 85%;
+  top: 18%;
+  animation-delay: 2.5s;
+}
+
+.star:nth-child(12) {
+  width: 3px;
+  height: 3px;
+  left: 15%;
+  top: 40%;
+  animation-delay: 0.8s;
+}
+
+.star:nth-child(13) {
+  width: 2px;
+  height: 2px;
+  left: 60%;
+  top: 35%;
+  animation-delay: 1.2s;
+}
+
+.star:nth-child(14) {
+  width: 4px;
+  height: 4px;
+  left: 80%;
+  top: 45%;
+  animation-delay: 1.8s;
+}
+
+.star:nth-child(15) {
+  width: 2px;
+  height: 2px;
+  left: 30%;
+  top: 50%;
+  animation-delay: 2.2s;
+}
+
+/* Shooting Stars */
+.shooting-star:nth-child(16) {
+  left: 80%;
+  top: 10%;
+  animation-delay: 3s;
+}
+
+.shooting-star:nth-child(17) {
+  left: 60%;
+  top: 20%;
+  animation-delay: 6s;
+}
+
+.shooting-star:nth-child(18) {
+  left: 90%;
+  top: 30%;
+  animation-delay: 9s;
+}
+
+.shooting-star:nth-child(19) {
+  left: 70%;
+  top: 15%;
+  animation-delay: 12s;
+}
+
+.shooting-star:nth-child(20) {
+  left: 85%;
+  top: 25%;
+  animation-delay: 15s;
+}
+
+/* Shooting Stars - Left Side */
+.shooting-star:nth-child(21) {
+  left: 20%;
+  top: 10%;
+  animation-delay: 4s;
+}
+
+.shooting-star:nth-child(22) {
+  left: 35%;
+  top: 18%;
+  animation-delay: 7s;
+}
+
+.shooting-star:nth-child(23) {
+  left: 10%;
+  top: 30%;
+  animation-delay: 10s;
+}
+
+.shooting-star:nth-child(24) {
+  left: 25%;
+  top: 22%;
+  animation-delay: 13s;
+}
+
+.shooting-star:nth-child(25) {
+  left: 15%;
+  top: 35%;
+  animation-delay: 16s;
 }

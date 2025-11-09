@@ -97,35 +97,42 @@ export default function VerifyNPI() {
 
   if (showSuccess && provider) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center animate-fade-in">
+      <div className="min-h-screen animated-gradient flex items-center justify-center p-4 relative overflow-hidden">
+        <div className="floating-particles">
+          <div className="particle"></div>
+          <div className="particle"></div>
+          <div className="particle"></div>
+          <div className="particle"></div>
+          <div className="particle"></div>
+        </div>
+        <div className="bg-black/60 backdrop-blur-xl rounded-3xl shadow-2xl p-10 max-w-md w-full text-center animate-fade-in border border-purple-500/20 relative z-10">
           <div className="mb-6">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-16 h-16 bg-green-900/50 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-green-500">
+              <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            <h1 className="text-2xl font-bold text-white mb-2">
               Welcome back!
             </h1>
-            <p className="text-lg text-gray-700">
+            <p className="text-lg text-purple-200">
               Dr. {provider.firstName} {provider.lastName}
             </p>
             {provider.credential && (
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-sm text-purple-400 mt-1">
                 {provider.credential}
               </p>
             )}
           </div>
-          
-          <div className="bg-gray-50 rounded-lg p-4 mb-6">
-            <p className="text-sm text-gray-600">
+
+          <div className="bg-gray-800/50 rounded-lg p-4 mb-6 border border-purple-800/30">
+            <p className="text-sm text-gray-300">
               Redirecting to dashboard in a moment...
             </p>
           </div>
-          
+
           <div className="flex justify-center">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600"></div>
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-500"></div>
           </div>
         </div>
       </div>
@@ -133,25 +140,32 @@ export default function VerifyNPI() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full">
+    <div className="min-h-screen animated-gradient flex items-center justify-center p-4 relative overflow-hidden">
+      <div className="floating-particles">
+        <div className="particle"></div>
+        <div className="particle"></div>
+        <div className="particle"></div>
+        <div className="particle"></div>
+        <div className="particle"></div>
+      </div>
+      <div className="bg-black/60 backdrop-blur-xl rounded-3xl shadow-2xl p-10 max-w-md w-full border border-purple-500/20 relative z-10">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="w-16 h-16 bg-purple-900/50 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-purple-600">
+            <svg className="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          <h1 className="text-2xl font-bold text-white mb-2">
             NPI Verification
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-300">
             Please enter your National Provider Identifier to continue
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="npi" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="npi" className="block text-sm font-medium text-purple-300 mb-2">
               NPI Number
             </label>
             <input
@@ -165,12 +179,12 @@ export default function VerifyNPI() {
               placeholder="Enter 10-digit NPI"
               maxLength={10}
               disabled={loading}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
-                error ? 'border-red-300 bg-red-50' : 'border-gray-300'
-              } ${loading ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors text-white placeholder-gray-500 ${
+                error ? 'border-red-500 bg-red-900/30' : 'border-purple-800/50 bg-gray-800/50'
+              } ${loading ? 'bg-gray-800/30 cursor-not-allowed' : ''}`}
             />
             {error && (
-              <p className="mt-2 text-sm text-red-600 animate-fade-in">
+              <p className="mt-2 text-sm text-red-400 animate-fade-in">
                 {error}
               </p>
             )}
@@ -179,10 +193,10 @@ export default function VerifyNPI() {
           <button
             type="submit"
             disabled={loading || npi.length !== 10}
-            className={`w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 ${
+            className={`w-full py-4 px-4 rounded-xl font-bold transition-all duration-300 ${
               loading || npi.length !== 10
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
+                ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                : 'bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 text-white shadow-xl shadow-purple-500/40 hover:shadow-purple-500/60 hover:scale-105'
             }`}
           >
             {loading ? (
@@ -200,7 +214,7 @@ export default function VerifyNPI() {
           <div className="mt-6">
             <button
               onClick={handleRetry}
-              className="w-full py-2 px-4 text-sm text-indigo-600 hover:text-indigo-800 font-medium transition-colors"
+              className="w-full py-2 px-4 text-sm text-purple-400 hover:text-purple-300 font-medium transition-colors"
             >
               Try Again
             </button>

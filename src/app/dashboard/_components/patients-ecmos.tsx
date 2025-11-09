@@ -316,7 +316,7 @@ export default function PatientsECMOs() {
     >
       <div className="space-y-6">
         {/* Notification Bell and Add Patient Button */}
-        <div className="flex justify-end items-center gap-3">
+        <div className="flex justify-end items-center gap-3 mt-16">
           <NotificationBell />
           
           <button
@@ -331,7 +331,7 @@ export default function PatientsECMOs() {
         </div>
 
         {/* Split Layout */}
-        <div className="flex gap-6 h-[calc(100vh-12rem)]">
+        <div className="flex gap-6 h-[calc(100vh-16rem)] mt-4">
           {/* Left Side - Patient Table */}
           <div className="w-2/5 bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl overflow-hidden flex flex-col">
             <div className="p-6 border-b border-gray-200">
@@ -404,7 +404,10 @@ export default function PatientsECMOs() {
           </div>
 
           {/* Right Side - Google Maps */}
-          <div className="w-3/5 bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl overflow-hidden flex flex-col">
+          <div
+            className="w-3/5 bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl overflow-hidden flex flex-col self-start mt-6"
+            style={{ height: "calc(100vh - 16rem - 1.5rem)" }}
+          >
             <div className="p-6 border-b border-gray-200">
               <h3 className="text-xl font-semibold text-gray-800">Patient Locations</h3>
             </div>
