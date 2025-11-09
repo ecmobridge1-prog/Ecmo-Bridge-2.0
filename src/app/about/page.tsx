@@ -49,7 +49,7 @@ export default function About() {
   ];
 
   return (
-    <div className="min-h-screen animated-gradient pt-20 pb-12 relative overflow-hidden">
+    <div className="min-h-screen animated-gradient pt-28 pb-12 relative overflow-hidden">
       {/* Floating Particles Background */}
       <div className="floating-particles">
         <div className="particle"></div>

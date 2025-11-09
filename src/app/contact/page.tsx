@@ -1,6 +1,6 @@
 export default function Contact() {
   return (
-    <div className="min-h-screen animated-gradient flex items-center justify-center pt-20 relative overflow-hidden">
+    <div className="min-h-screen animated-gradient flex items-center justify-center pt-28 relative overflow-hidden">
       <div className="floating-particles">
         <div className="particle"></div>
         <div className="particle"></div>

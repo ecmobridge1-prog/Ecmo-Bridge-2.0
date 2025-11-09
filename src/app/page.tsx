@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="min-h-screen animated-gradient pt-20 relative overflow-hidden">
+    <div className="min-h-screen animated-gradient pt-28 relative overflow-hidden">
       {/* Floating Particles Background */}
       <div className="floating-particles">
         <div className="particle"></div>
