@@ -455,3 +455,64 @@ a {
   top: 35%;
   animation-delay: 16s;
 }
+
+/* Additional shooting stars distributed across the screen */
+.shooting-star:nth-child(26) {
+  left: 45%;
+  top: 8%;
+  animation-delay: 5s;
+}
+
+.shooting-star:nth-child(27) {
+  left: 55%;
+  top: 12%;
+  animation-delay: 8s;
+}
+
+.shooting-star:nth-child(28) {
+  left: 50%;
+  top: 25%;
+  animation-delay: 11s;
+}
+
+.shooting-star:nth-child(29) {
+  left: 65%;
+  top: 5%;
+  animation-delay: 14s;
+}
+
+.shooting-star:nth-child(30) {
+  left: 40%;
+  top: 40%;
+  animation-delay: 17s;
+}
+
+.shooting-star:nth-child(31) {
+  left: 30%;
+  top: 15%;
+  animation-delay: 2s;
+}
+
+.shooting-star:nth-child(32) {
+  left: 75%;
+  top: 8%;
+  animation-delay: 6s;
+}
+
+.shooting-star:nth-child(33) {
+  left: 50%;
+  top: 35%;
+  animation-delay: 9s;
+}
+
+.shooting-star:nth-child(34) {
+  left: 95%;
+  top: 20%;
+  animation-delay: 12s;
+}
+
+.shooting-star:nth-child(35) {
+  left: 5%;
+  top: 25%;
+  animation-delay: 15s;
+}
