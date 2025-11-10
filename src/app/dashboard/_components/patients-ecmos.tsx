@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import { useState, useEffect } from "react";
-import { GoogleMap, LoadScript, Autocomplete, Marker, InfoWindow, OverlayView } from "@react-google-maps/api";
+import { useState, useEffect, useMemo } from "react";
+import { GoogleMap, useJsApiLoader, Autocomplete, Marker, InfoWindow, OverlayView } from "@react-google-maps/api";
 import { useUser } from "@clerk/nextjs";
 import { 
   getAllPatients, 
@@ -53,6 +53,14 @@ interface Patient {
 
 export default function PatientsECMOs() {
   const { user } = useUser();
+  
+  // Load Google Maps API
+  const { isLoaded, loadError } = useJsApiLoader({
+    id: 'google-map-script',
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
+    libraries: libraries,
+  });
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [autocomplete, setAutocomplete] = useState<google.maps.places.Autocomplete | null>(null);
   const [selectedLocation, setSelectedLocation] = useState<{
@@ -309,11 +317,61 @@ export default function PatientsECMOs() {
     }
   }, [isDetailModalOpen, selectedPatient]);
 
+  // Create icon configurations with google.maps.Point when API is loaded
+  const patientMarkerIcon = useMemo(() => {
+    if (!isLoaded || typeof google === 'undefined' || !google.maps?.Point) {
+      return undefined;
+    }
+    return {
+      path: "M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z",
+      fillColor: '#3B82F6',
+      fillOpacity: 1,
+      strokeColor: '#2563EB',
+      strokeWeight: 2,
+      scale: 0.75,
+      anchor: new google.maps.Point(0, 0),
+    };
+  }, [isLoaded]);
+
+  const hospitalMarkerIcon = useMemo(() => {
+    if (!isLoaded || typeof google === 'undefined' || !google.maps?.Point) {
+      return undefined;
+    }
+    return {
+      path: "M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z",
+      fillColor: '#EA4335',
+      fillOpacity: 0.95,
+      strokeColor: '#FFFFFF',
+      strokeWeight: 2,
+      scale: 1.0,
+      anchor: new google.maps.Point(0, 0),
+    };
+  }, [isLoaded]);
+
+  // Show loading state while API is loading
+  if (!isLoaded) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-12rem)]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-3"></div>
+          <p className="text-gray-500">Loading map...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state if API failed to load
+  if (loadError) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-12rem)]">
+        <div className="text-center">
+          <p className="text-red-500">Error loading Google Maps. Please try again.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <LoadScript
-      googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""}
-      libraries={libraries}
-    >
       <div className="space-y-6">
         {/* Notification Bell and Add Patient Button */}
         <div className="flex justify-end items-center gap-3">
@@ -429,15 +487,7 @@ export default function PatientsECMOs() {
                       lat: patient.latitude,
                       lng: patient.longitude
                     }}
-                    icon={{
-                      path: "M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z",
-                      fillColor: '#3B82F6',
-                      fillOpacity: 1,
-                      strokeColor: '#2563EB',
-                      strokeWeight: 2,
-                      scale: 0.75,
-                      anchor: { x: 0, y: 0 },
-                    }}
+                    icon={patientMarkerIcon}
                     onMouseOver={() => setHoveredPatient(patient.id)}
                     onMouseOut={() => setHoveredPatient(null)}
                     onClick={() => setPinnedPatient(patient.id)}
@@ -453,15 +503,7 @@ export default function PatientsECMOs() {
                       lng: hospital.lng
                     }}
                     title={hospital.name}
-                    icon={{
-                      path: "M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z",
-                      fillColor: '#EA4335',
-                      fillOpacity: 0.95,
-                      strokeColor: '#FFFFFF',
-                      strokeWeight: 2,
-                      scale: 1.0,
-                      anchor: { x: 0, y: 0 },
-                    }}
+                    icon={hospitalMarkerIcon}
                     label={{
                       text: 'H',
                       color: '#FFFFFF',
@@ -1128,6 +1170,5 @@ export default function PatientsECMOs() {
           </div>
         )}
       </div>
-    </LoadScript>
   );
 }
