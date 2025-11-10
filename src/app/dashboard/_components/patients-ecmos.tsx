@@ -436,7 +436,7 @@ export default function PatientsECMOs() {
                       strokeColor: '#2563EB',
                       strokeWeight: 2,
                       scale: 0.75,
-                      anchor: new google.maps.Point(0, 0),
+                      anchor: { x: 0, y: 0 },
                     }}
                     onMouseOver={() => setHoveredPatient(patient.id)}
                     onMouseOut={() => setHoveredPatient(null)}
@@ -460,7 +460,7 @@ export default function PatientsECMOs() {
                       strokeColor: '#FFFFFF',
                       strokeWeight: 2,
                       scale: 1.0,
-                      anchor: new google.maps.Point(0, 0),
+                      anchor: { x: 0, y: 0 },
                     }}
                     label={{
                       text: 'H',
