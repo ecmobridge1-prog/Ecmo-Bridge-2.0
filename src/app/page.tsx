@@ -6,11 +6,11 @@ export default function Home() {
     <div className="min-h-screen animated-gradient pt-28 relative overflow-hidden">
       {/* Floating Particles Background */}
       <div className="floating-particles">
-        <div className="particle"></div>
-        <div className="particle"></div>
-        <div className="particle"></div>
-        <div className="particle"></div>
-        <div className="particle"></div>
+        <div className="shooting-star"></div>
+        <div className="shooting-star"></div>
+        <div className="shooting-star"></div>
+        <div className="shooting-star"></div>
+        <div className="shooting-star"></div>
         <div className="star"></div>
         <div className="star"></div>
         <div className="star"></div>
