@@ -95,15 +95,28 @@ a {
 
 @keyframes shootingStar {
   0% {
-    transform: translateX(0) translateY(0) rotate(-45deg);
+    transform: translateX(0) translateY(0) rotate(-45deg) scale(0);
+    opacity: 0;
+  }
+  10% {
+    transform: translateX(-30px) translateY(30px) rotate(-45deg) scale(1);
     opacity: 1;
   }
   70% {
     opacity: 1;
   }
   100% {
-    transform: translateX(-300px) translateY(300px) rotate(-45deg);
+    transform: translateX(-500px) translateY(500px) rotate(-45deg) scale(0.5);
     opacity: 0;
+  }
+}
+
+@keyframes shootingStarPulse {
+  0%, 100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.5);
   }
 }
 
@@ -243,16 +256,40 @@ a {
 
 .shooting-star {
   position: absolute;
-  width: 2px;
-  height: 2px;
-  background: linear-gradient(
-    -45deg,
+  width: 4px;
+  height: 4px;
+  background: radial-gradient(
+    circle,
     rgba(255, 255, 255, 1) 0%,
-    rgba(255, 255, 255, 0.8) 30%,
+    rgba(200, 180, 255, 0.9) 40%,
     transparent 100%
   );
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
-  animation: shootingStar 2s linear infinite;
+  border-radius: 50%;
+  box-shadow:
+    0 0 20px rgba(255, 255, 255, 1),
+    0 0 40px rgba(200, 180, 255, 0.8),
+    0 0 60px rgba(200, 180, 255, 0.6);
+  animation:
+    shootingStar 3s ease-out infinite,
+    shootingStarPulse 0.3s ease-in-out infinite;
+}
+
+.shooting-star::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 150px;
+  height: 2px;
+  background: linear-gradient(
+    to left,
+    rgba(255, 255, 255, 0.9) 0%,
+    rgba(200, 180, 255, 0.6) 20%,
+    rgba(150, 120, 255, 0.3) 50%,
+    transparent 100%
+  );
+  transform: translate(-50%, -50%) rotate(-45deg);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
 }
 
 .particle::after {
@@ -394,125 +431,165 @@ a {
   animation-delay: 2.2s;
 }
 
-/* Shooting Stars */
+/* Shooting Stars - Varied speeds and sizes */
 .shooting-star:nth-child(16) {
   left: 80%;
   top: 10%;
-  animation-delay: 3s;
+  animation: shootingStar 2.5s ease-out infinite 3s, shootingStarPulse 0.3s ease-in-out infinite;
+  width: 5px;
+  height: 5px;
 }
 
 .shooting-star:nth-child(17) {
   left: 60%;
   top: 20%;
-  animation-delay: 6s;
+  animation: shootingStar 3.5s ease-out infinite 6s, shootingStarPulse 0.3s ease-in-out infinite;
+  width: 3px;
+  height: 3px;
 }
 
 .shooting-star:nth-child(18) {
   left: 90%;
   top: 30%;
-  animation-delay: 9s;
+  animation: shootingStar 2s ease-out infinite 9s, shootingStarPulse 0.3s ease-in-out infinite;
+  width: 6px;
+  height: 6px;
 }
 
 .shooting-star:nth-child(19) {
   left: 70%;
   top: 15%;
-  animation-delay: 12s;
+  animation: shootingStar 4s ease-out infinite 12s, shootingStarPulse 0.3s ease-in-out infinite;
+  width: 4px;
+  height: 4px;
 }
 
 .shooting-star:nth-child(20) {
   left: 85%;
   top: 25%;
-  animation-delay: 15s;
+  animation: shootingStar 2.8s ease-out infinite 15s, shootingStarPulse 0.3s ease-in-out infinite;
+  width: 5px;
+  height: 5px;
 }
 
-/* Shooting Stars - Left Side */
+/* Shooting Stars - Left Side with varied animations */
 .shooting-star:nth-child(21) {
   left: 20%;
   top: 10%;
-  animation-delay: 4s;
+  animation: shootingStar 3.2s ease-out infinite 4s, shootingStarPulse 0.3s ease-in-out infinite;
+  width: 5px;
+  height: 5px;
 }
 
 .shooting-star:nth-child(22) {
   left: 35%;
   top: 18%;
-  animation-delay: 7s;
+  animation: shootingStar 2.5s ease-out infinite 7s, shootingStarPulse 0.3s ease-in-out infinite;
+  width: 4px;
+  height: 4px;
 }
 
 .shooting-star:nth-child(23) {
   left: 10%;
   top: 30%;
-  animation-delay: 10s;
+  animation: shootingStar 3.8s ease-out infinite 10s, shootingStarPulse 0.3s ease-in-out infinite;
+  width: 6px;
+  height: 6px;
 }
 
 .shooting-star:nth-child(24) {
   left: 25%;
   top: 22%;
-  animation-delay: 13s;
+  animation: shootingStar 2.2s ease-out infinite 13s, shootingStarPulse 0.3s ease-in-out infinite;
+  width: 5px;
+  height: 5px;
 }
 
 .shooting-star:nth-child(25) {
   left: 15%;
   top: 35%;
-  animation-delay: 16s;
+  animation: shootingStar 3.5s ease-out infinite 16s, shootingStarPulse 0.3s ease-in-out infinite;
+  width: 4px;
+  height: 4px;
 }
 
-/* Additional shooting stars distributed across the screen */
+/* Center shooting stars with varied animations */
 .shooting-star:nth-child(26) {
   left: 45%;
   top: 8%;
-  animation-delay: 5s;
+  animation: shootingStar 2.7s ease-out infinite 5s, shootingStarPulse 0.3s ease-in-out infinite;
+  width: 5px;
+  height: 5px;
 }
 
 .shooting-star:nth-child(27) {
   left: 55%;
   top: 12%;
-  animation-delay: 8s;
+  animation: shootingStar 3.3s ease-out infinite 8s, shootingStarPulse 0.3s ease-in-out infinite;
+  width: 4px;
+  height: 4px;
 }
 
 .shooting-star:nth-child(28) {
   left: 50%;
   top: 25%;
-  animation-delay: 11s;
+  animation: shootingStar 2.4s ease-out infinite 11s, shootingStarPulse 0.3s ease-in-out infinite;
+  width: 6px;
+  height: 6px;
 }
 
 .shooting-star:nth-child(29) {
   left: 65%;
   top: 5%;
-  animation-delay: 14s;
+  animation: shootingStar 3.6s ease-out infinite 14s, shootingStarPulse 0.3s ease-in-out infinite;
+  width: 5px;
+  height: 5px;
 }
 
 .shooting-star:nth-child(30) {
   left: 40%;
   top: 40%;
-  animation-delay: 17s;
+  animation: shootingStar 2.9s ease-out infinite 17s, shootingStarPulse 0.3s ease-in-out infinite;
+  width: 4px;
+  height: 4px;
 }
 
 .shooting-star:nth-child(31) {
   left: 30%;
   top: 15%;
-  animation-delay: 2s;
+  animation: shootingStar 3.1s ease-out infinite 2s, shootingStarPulse 0.3s ease-in-out infinite;
+  width: 5px;
+  height: 5px;
 }
 
 .shooting-star:nth-child(32) {
   left: 75%;
   top: 8%;
-  animation-delay: 6s;
+  animation: shootingStar 2.6s ease-out infinite 6s, shootingStarPulse 0.3s ease-in-out infinite;
+  width: 6px;
+  height: 6px;
 }
 
 .shooting-star:nth-child(33) {
   left: 50%;
   top: 35%;
-  animation-delay: 9s;
+  animation: shootingStar 3.4s ease-out infinite 9s, shootingStarPulse 0.3s ease-in-out infinite;
+  width: 4px;
+  height: 4px;
 }
 
 .shooting-star:nth-child(34) {
   left: 95%;
   top: 20%;
-  animation-delay: 12s;
+  animation: shootingStar 2.3s ease-out infinite 12s, shootingStarPulse 0.3s ease-in-out infinite;
+  width: 5px;
+  height: 5px;
 }
 
 .shooting-star:nth-child(35) {
   left: 5%;
   top: 25%;
-  animation-delay: 15s;
+  animation: shootingStar 3.7s ease-out infinite 15s, shootingStarPulse 0.3s ease-in-out infinite;
+  width: 6px;
+  height: 6px;
 }
