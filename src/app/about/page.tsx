@@ -92,6 +92,9 @@ export default function About() {
         <div className="shooting-star"></div>
         <div className="shooting-star"></div>
         <div className="shooting-star"></div>
+        <div className="planet"></div>
+        <div className="planet"></div>
+        <div className="planet"></div>
       </div>
       <main className="max-w-7xl mx-auto px-6 py-12 relative z-10">
         <div className="text-center">
