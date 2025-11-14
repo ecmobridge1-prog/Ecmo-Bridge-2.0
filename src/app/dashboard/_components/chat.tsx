@@ -96,7 +96,7 @@ interface FAQData {
 export default function Chat() {
   const { user } = useUser();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [selectedPhysicians, setSelectedUsers] = useState<string[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [patients, setPatients] = useState<Patient[]>([]);
@@ -312,10 +312,10 @@ export default function Chat() {
   };
 
   const toggleUserSelection = (userId: string) => {
-    if (selectedUsers.includes(userId)) {
-      setSelectedUsers(selectedUsers.filter(id => id !== userId));
+    if (selectedPhysicians.includes(userId)) {
+      setSelectedUsers(selectedPhysicians.filter(id => id !== userId));
     } else {
-      setSelectedUsers([...selectedUsers, userId]);
+      setSelectedUsers([...selectedPhysicians, userId]);
     }
   };
 
@@ -365,7 +365,7 @@ export default function Chat() {
       return;
     }
 
-    if (selectedUsers.length === 0) {
+    if (selectedPhysicians.length === 0) {
       alert('Please select at least one user');
       return;
     }
@@ -374,7 +374,7 @@ export default function Chat() {
     try {
       // Convert Clerk ID to UUID format
       const currentUserUuid = clerkIdToUuid(user.id);
-      await createChatWithMembers(chatName, selectedPatientId!, selectedUsers, currentUserUuid);
+      await createChatWithMembers(chatName, selectedPatientId!, selectedPhysicians, currentUserUuid);
       
       // Success! Close modal and reset form
       setIsModalOpen(false);
@@ -929,7 +929,7 @@ export default function Chat() {
             {/* Patient Selection (Which patient this chat is regarding) */}
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Select Patient <span className="text-red-500">*</span>
+                Select Patient(s) <span className="text-red-500">*</span>
               </label>
               {loadingPatients ? (
                 <div className="flex items-center justify-center py-8 border border-gray-300 rounded-lg">
@@ -958,7 +958,7 @@ export default function Chat() {
             {/* User Selection (Select users to add to chat) */}
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Select Users to Add
+                Select Physician(s)
               </label>
               <div className="border border-gray-300 rounded-lg max-h-48 overflow-y-auto">
                 {loadingUsers ? (
@@ -977,7 +977,7 @@ export default function Chat() {
                     >
                       <input
                         type="checkbox"
-                        checked={selectedUsers.includes(user.id)}
+                        checked={selectedPhysicians.includes(user.id)}
                         onChange={() => toggleUserSelection(user.id)}
                         className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
                       />
@@ -994,7 +994,7 @@ export default function Chat() {
                 )}
               </div>
               <p className="text-sm text-gray-500 mt-2">
-                {selectedUsers.length} patient(s) selected
+                {selectedPhysicians.length} physician(s) selected
               </p>
             </div>
 
@@ -1012,7 +1012,7 @@ export default function Chat() {
               </button>
               <button
                 onClick={handleCreateChat}
-                disabled={creatingChat || !chatName.trim() || !selectedPatientId || selectedUsers.length === 0}
+                disabled={creatingChat || !chatName.trim() || !selectedPatientId || selectedPhysicians.length === 0}
                 className="flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {creatingChat ? (
