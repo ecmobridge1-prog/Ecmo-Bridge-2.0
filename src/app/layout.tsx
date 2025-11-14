@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ECMO Bridge 2.0",
+  title: "ECMO Bridge",
   description: "Simplified patient-machine matching for healthcare",
 };
 

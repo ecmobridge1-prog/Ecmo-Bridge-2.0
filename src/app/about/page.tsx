@@ -49,68 +49,118 @@ export default function About() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-900 via-purple-600 to-purple-400 pt-20 pb-12">
-      <main className="max-w-7xl mx-auto px-6 py-12">
+    <div className="min-h-screen animated-gradient pt-28 pb-12 relative overflow-hidden">
+      {/* Floating Particles Background */}
+      <div className="floating-particles">
+        <div className="shooting-star"></div>
+        <div className="shooting-star"></div>
+        <div className="shooting-star"></div>
+        <div className="shooting-star"></div>
+        <div className="shooting-star"></div>
+        <div className="star"></div>
+        <div className="star"></div>
+        <div className="star"></div>
+        <div className="star"></div>
+        <div className="star"></div>
+        <div className="star"></div>
+        <div className="star"></div>
+        <div className="star"></div>
+        <div className="star"></div>
+        <div className="star"></div>
+        <div className="shooting-star"></div>
+        <div className="shooting-star"></div>
+        <div className="shooting-star"></div>
+        <div className="shooting-star"></div>
+        <div className="shooting-star"></div>
+        <div className="shooting-star"></div>
+        <div className="shooting-star"></div>
+        <div className="shooting-star"></div>
+        <div className="shooting-star"></div>
+        <div className="shooting-star"></div>
+        <div className="shooting-star"></div>
+        <div className="shooting-star"></div>
+        <div className="shooting-star"></div>
+        <div className="shooting-star"></div>
+        <div className="shooting-star"></div>
+        <div className="shooting-star"></div>
+        <div className="shooting-star"></div>
+        <div className="shooting-star"></div>
+        <div className="shooting-star"></div>
+        <div className="shooting-star"></div>
+        <div className="shooting-star"></div>
+        <div className="shooting-star"></div>
+        <div className="shooting-star"></div>
+        <div className="shooting-star"></div>
+        <div className="shooting-star"></div>
+        <div className="planet"></div>
+        <div className="planet"></div>
+        <div className="planet"></div>
+      </div>
+      <main className="max-w-7xl mx-auto px-6 py-12 relative z-10">
         <div className="text-center">
           <h1 className="text-5xl font-bold text-white mb-12">
-            About ECMO Bridge 2.0
+            About ECMO Bridge
           </h1>
 
           {/* Logo Section */}
-          <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl p-8 mb-8">
-            <div className="flex items-center justify-center gap-12">
+          <div className="bg-gray-900/70 backdrop-blur-md rounded-2xl shadow-2xl p-12 mb-10 border border-purple-500/20">
+            <div className="flex items-center justify-center gap-16">
               {/* Your Team Logo */}
               <div className="flex flex-col items-center">
-                <img 
-                  src="/ECMO Bridge.png" 
-                  alt="ECMO Bridge" 
-                  className="w-48 h-48 object-contain mb-3"
-                />
-                <p className="text-lg font-semibold text-gray-700">ECMO Bridge</p>
+                <div className="bg-white/95 rounded-xl p-6 mb-4">
+                  <img
+                    src="/ECMO Bridge.png"
+                    alt="ECMO Bridge"
+                    className="w-48 h-48 object-contain"
+                  />
+                </div>
+                <p className="text-xl font-bold bg-gradient-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent">ECMO Bridge</p>
               </div>
 
               {/* X Symbol */}
-              <div className="text-6xl font-bold text-gray-400"></div>
+              <div className="text-6xl font-bold bg-gradient-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent">×</div>
 
               {/* Mayo Clinic Logo */}
               <div className="flex flex-col items-center">
-                <img 
-                  src="/Mayo Clinic.png" 
-                  alt="Mayo Clinic" 
-                  className="w-48 h-48 object-contain mb-3"
-                />
-                <p className="text-lg font-semibold text-gray-700">Mayo Clinic</p>
+                <div className="bg-white/95 rounded-xl p-6 mb-4">
+                  <img
+                    src="/Mayo Clinic.png"
+                    alt="Mayo Clinic"
+                    className="w-48 h-48 object-contain"
+                  />
+                </div>
+                <p className="text-xl font-bold bg-gradient-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent">Mayo Clinic</p>
               </div>
             </div>
           </div>
 
           {/* Team Section */}
-          <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl p-12 mb-12">
-            <h2 className="text-3xl font-semibold text-gray-800 mb-8">
+          <div className="bg-black/40 backdrop-blur-md rounded-2xl shadow-2xl p-12 mb-10 border border-purple-500/10">
+            <h2 className="text-4xl font-bold text-white mb-12">
               Our Team
             </h2>
-            <div className="grid grid-cols-3 gap-8 max-w-4xl mx-auto">
+            <div className="grid grid-cols-3 gap-10 max-w-5xl mx-auto">
               {teamMembers.map((member, index) => (
-                <div key={index} className="flex flex-col items-center">
+                <div key={index} className="group flex flex-col items-center">
                   {/* Team Member Photo */}
                   {member.photo ? (
-                    <img 
-                      src={member.photo} 
+                    <img
+                      src={member.photo}
                       alt={member.name}
-                      className="w-40 h-40 rounded-full shadow-lg object-cover mb-3 hover:scale-105 transition-transform"
+                      className="w-44 h-44 rounded-2xl shadow-xl shadow-purple-500/20 object-cover mb-4 group-hover:scale-105 transition-all duration-300 border border-purple-500/30 group-hover:border-purple-500/60"
                     />
                   ) : (
-                    <div className="w-40 h-40 bg-gradient-to-br from-purple-200 to-purple-300 rounded-full shadow-lg flex items-center justify-center mb-3 hover:scale-105 transition-transform">
-                      <svg className="w-20 h-20 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                    <div className="w-44 h-44 bg-gradient-to-br from-purple-700 to-purple-900 rounded-2xl shadow-xl shadow-purple-500/20 flex items-center justify-center mb-4 group-hover:scale-105 transition-all duration-300 border border-purple-500/30">
+                      <svg className="w-20 h-20 text-purple-200" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                       </svg>
                     </div>
                   )}
                   {/* Team Member Name */}
-                  <p className="text-sm font-medium text-gray-600">
+                  <p className="text-base font-bold text-white">
                     {member.name}
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-sm text-purple-400 font-medium">
                     {member.role}
                   </p>
                 </div>
@@ -119,19 +169,19 @@ export default function About() {
           </div>
 
           {/* Contact Section */}
-          <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl p-12">
-            <h2 className="text-3xl font-semibold text-gray-800 mb-6 text-center">
+          <div className="bg-black/40 backdrop-blur-md rounded-2xl shadow-2xl p-12 border border-purple-500/10">
+            <h2 className="text-4xl font-bold text-white mb-8 text-center">
               Contact Us
             </h2>
             <div className="text-center">
-              <p className="text-lg text-gray-700 mb-4">
+              <p className="text-lg text-gray-300 mb-8">
                 Have questions or need support?
               </p>
-              <a 
+              <a
                 href="mailto:ecmobridge1@gmail.com"
-                className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-colors duration-200 shadow-lg"
+                className="inline-flex items-center gap-3 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 text-white px-10 py-5 rounded-full font-bold text-lg transition-all duration-300 shadow-xl shadow-purple-500/40 hover:shadow-purple-500/60 hover:scale-105"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
                 ecmobridge1@gmail.com
