@@ -67,7 +67,7 @@ export default function Sidebar({ activeSection, onSectionChange }: SidebarProps
   ];
 
   return (
-    <div className="w-64 bg-black/80 backdrop-blur-xl shadow-2xl min-h-screen pt-20 fixed left-0 top-0 border-r border-purple-500/20">
+    <div className="w-64 bg-black/80 backdrop-blur-xl shadow-2xl h-screen pt-6 fixed left-0 top-20 border-r border-purple-500/20">
       <div className="p-6">
         <h2 className="text-2xl font-bold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent mb-8">Dashboard</h2>
 
