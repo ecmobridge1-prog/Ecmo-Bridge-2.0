@@ -1,3 +1,5 @@
+import Image from 'next/image';
+
 export default function Contact() {
   return (
     <div className="min-h-screen animated-gradient flex items-center justify-center pt-28 relative overflow-hidden">
@@ -21,9 +23,27 @@ export default function Contact() {
               This is the contact page. Here you can add contact information,
               forms, or other ways for users to get in touch with your team.
             </p>
-            <p className="text-xl text-gray-300 leading-relaxed">
-              Contact details and forms will be added here.
-            </p>
+            
+            {/* QR Code Section for Feedback Form */}
+            <div className="mt-12 pt-8 border-t border-purple-500/20">
+              <h3 className="text-2xl font-semibold text-white mb-4">
+                Share Your Feedback
+              </h3>
+              <p className="text-lg text-gray-300 mb-6">
+                Scan the QR code below to access our feedback form
+              </p>
+              <div className="flex justify-center">
+                <div className="bg-white p-4 rounded-lg shadow-lg">
+                  <Image
+                    src="/group members/QRCode for ECMO Bridge Website Feedback Form.png"
+                    alt="QR Code for ECMO Bridge Website Feedback Form"
+                    width={250}
+                    height={250}
+                    className="rounded"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </main>
