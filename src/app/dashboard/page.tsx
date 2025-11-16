@@ -6,6 +6,7 @@ import { useUser } from "@clerk/nextjs";
 import Sidebar from "./_components/sidebar";
 import PatientsECMOs from "./_components/patients-ecmos";
 import Chat from "./_components/chat";
+import ZoomCalls from "./_components/zoom-calls";
 import UserSync from "./_components/user-sync";
 
 export default function Dashboard() {
@@ -72,6 +73,8 @@ export default function Dashboard() {
         return <PatientsECMOs />;
       case "chat":
         return <Chat />;
+      case "zoom-calls":
+        return <ZoomCalls />;
       default:
         return <PatientsECMOs />;
     }

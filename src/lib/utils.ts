@@ -24,3 +24,4 @@ export function clerkIdToUuid(clerkUserId: string): string {
   // Format as UUID v4
   return `${hashStr.slice(0, 8)}-${hashStr.slice(8, 12)}-4${hashStr.slice(13, 16)}-${hashStr.slice(16, 20)}-${hashStr.slice(20, 32)}`;
 }
+
