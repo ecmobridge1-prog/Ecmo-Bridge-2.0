@@ -8,7 +8,6 @@ import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 const navLinks = [
   { label: "Home", href: "/" },
   { label: "About", href: "/about" },
-  { label: "Contact", href: "/contact" },
   { label: "Dashboard", href: "/dashboard" },
   { label: "Verify NPI", href: "/verify-npi" },
 ];
@@ -49,13 +48,6 @@ export default function Navigation() {
         </div>
 
         <div className="flex items-center gap-3 rounded-full bg-black/40 px-3 py-1">
-          <Link
-            href="/contact"
-            className="hidden rounded-full bg-gradient-to-r from-purple-400 via-fuchsia-500 to-purple-600 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-purple-500/40 transition-transform duration-300 hover:-translate-y-0.5 hover:shadow-purple-500/60 sm:inline-flex"
-          >
-            Talk to Us
-          </Link>
-
           <SignedOut>
             <SignInButton mode="modal">
               <button className="rounded-full border border-white/20 px-5 py-2 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/10">
