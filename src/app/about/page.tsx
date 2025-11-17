@@ -4,47 +4,47 @@ export default function About() {
     {
       name: "Huzaifah Sheikh",
       role: "Team Lead",
-      photo: "/group members/Huz.png"
+      photo: "/Updated Headshots/Huzaifah_S_Headshot.jpg"
     },
     {
       name: "Neha Kanjamala",
       role: "Front-End Engineer",
-      photo: "/group members/Neha.png"
+      photo: "/Updated Headshots/Neha headshot.jpg"
     },
     {
       name: "Jia Cheng Kang",
       role: "Back-End Engineer",
-      photo: "/group members/Jc.jpg"
+      photo: "/Updated Headshots/Jia Cheng Kang - Headshot.jpg"
     },
     {
       name: "Arjun Chaudhary",
       role: "Back-End Engineer",
-      photo: "/group members/Arjun.png"
+      photo: "/Updated Headshots/Arjun_Headshot_Edited.png"
     },
     {
       name: "Mrinal Chopde",
       role: "Front-End Engineer",
-      photo: "/group members/Mrinal.png"
+      photo: "/Updated Headshots/Mrinal.jpg"
     },
     {
       name: "Ameya Patibanda",
       role: "Front-End Engineer",
-      photo: "/group members/Ameya.png"
+      photo: "/Updated Headshots/ameya.jpg"
     },
     {
       name: "Harshit Kumar",
       role: "Back-End Engineer",
-      photo: "/group members/Harshit.png"
+      photo: "/Updated Headshots/Harshit_Headshot.jpg"
     },
     {
       name: "Pranav Kondapalli",
       role: "Front-End Engineer",
-      photo: "/group members/Pranav.png"
+      photo: "/Updated Headshots/pranavheadshot.jpg"
     },
     {
       name: "Abdimalik Abdirahman",
       role: "Back-End Engineer",
-      photo: "/group members/Abdi.png"
+      photo: "/Updated Headshots/Abdi.jpg"
     }
   ];
 
@@ -144,11 +144,13 @@ export default function About() {
                 <div key={index} className="group flex flex-col items-center">
                   {/* Team Member Photo */}
                   {member.photo ? (
-                    <img
-                      src={member.photo}
-                      alt={member.name}
-                      className="w-44 h-44 rounded-2xl shadow-xl shadow-purple-500/20 object-cover mb-4 group-hover:scale-105 transition-all duration-300 border border-purple-500/30 group-hover:border-purple-500/60"
-                    />
+                    <div className="w-56 h-56 rounded-2xl shadow-xl shadow-purple-500/20 mb-4 group-hover:scale-105 transition-all duration-300 border border-purple-500/30 group-hover:border-purple-500/60 bg-gray-900/50 flex items-center justify-center overflow-hidden p-4">
+                      <img
+                        src={member.photo}
+                        alt={member.name}
+                        className="max-w-full max-h-full w-auto h-auto object-contain"
+                      />
+                    </div>
                   ) : (
                     <div className="w-44 h-44 bg-gradient-to-br from-purple-700 to-purple-900 rounded-2xl shadow-xl shadow-purple-500/20 flex items-center justify-center mb-4 group-hover:scale-105 transition-all duration-300 border border-purple-500/30">
                       <svg className="w-20 h-20 text-purple-200" fill="currentColor" viewBox="0 0 20 20">
