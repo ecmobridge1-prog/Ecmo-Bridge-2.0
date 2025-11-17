@@ -1,55 +1,65 @@
 export default function About() {
   // Define your team members here
+  // objectPosition can be: "center", "top", "bottom", "left", "right", or custom like "50% 30%" (x% y%)
   const teamMembers = [
     {
       name: "Huzaifah Sheikh",
       role: "Team Lead",
-      photo: "/Updated Headshots/Huzaifah_S_Headshot.jpg"
+      photo: "/Updated Headshots/Huzaifah_S_Headshot.jpg",
+      objectPosition: "center"
     },
     {
       name: "Neha Kanjamala",
       role: "Front-End Engineer",
-      photo: "/Updated Headshots/Neha headshot.jpg"
+      photo: "/Updated Headshots/Neha headshot.jpg",
+      objectPosition: "50% 36%"
     },
     {
       name: "Jia Cheng Kang",
       role: "Back-End Engineer",
-      photo: "/Updated Headshots/Jia Cheng Kang - Headshot.jpg"
+      photo: "/Updated Headshots/Jia Cheng Kang - Headshot.jpg",
+      objectPosition: "50% 14%"
     },
     {
       name: "Arjun Chaudhary",
       role: "Back-End Engineer",
-      photo: "/Updated Headshots/Arjun_Headshot_Square.png"
+      photo: "/Updated Headshots/Arjun_Headshot_Edited.png",
+      objectPosition: "50% 5%"
     },
     {
       name: "Mrinal Chopde",
       role: "Front-End Engineer",
-      photo: "/Updated Headshots/Mrinal.jpg"
+      photo: "/Updated Headshots/Mrinal.jpg",
+      objectPosition: "50% 60%"
     },
     {
       name: "Ameya Patibanda",
       role: "Front-End Engineer",
-      photo: "/Updated Headshots/ameya.jpg"
+      photo: "/Updated Headshots/ameya.jpg",
+      objectPosition: "50% 90%"
     },
     {
       name: "Harshit Kumar",
       role: "Back-End Engineer",
-      photo: "/Updated Headshots/Harshit_Headshot.jpg"
+      photo: "/Updated Headshots/Harshit_Headshot.jpg",
+      objectPosition: "50% 10%"
     },
     {
       name: "Pranav Kondapalli",
       role: "Front-End Engineer",
-      photo: "/Updated Headshots/pranavheadshot.jpg"
+      photo: "/Updated Headshots/pranavheadshot.jpg",
+      objectPosition: "50% 45%"
     },
     {
       name: "Abdimalik Abdirahman",
       role: "Back-End Engineer",
-      photo: "/Updated Headshots/Abdi.jpg"
+      photo: "/Updated Headshots/Abdi.jpg",
+      objectPosition: "10% 8%"
     }
   ];
 
   return (
-    <div className="min-h-screen animated-gradient pb-12 relative overflow-hidden">
+    <div className="min-h-screen animated-gradient pt-28 pb-12 relative overflow-hidden">
       {/* Floating Particles Background */}
       <div className="floating-particles">
         <div className="shooting-star"></div>
@@ -144,6 +154,7 @@ export default function About() {
                       src={member.photo}
                       alt={member.name}
                       className="w-44 h-44 rounded-2xl shadow-xl shadow-purple-500/20 object-cover mb-4 group-hover:scale-105 transition-all duration-300 border border-purple-500/30 group-hover:border-purple-500/60"
+                      style={{ objectPosition: member.objectPosition || "center" }}
                     />
                   ) : (
                     <div className="w-44 h-44 bg-gradient-to-br from-purple-700 to-purple-900 rounded-2xl shadow-xl shadow-purple-500/20 flex items-center justify-center mb-4 group-hover:scale-105 transition-all duration-300 border border-purple-500/30">
