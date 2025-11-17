@@ -19,7 +19,7 @@ export default function About() {
     {
       name: "Arjun Chaudhary",
       role: "Back-End Engineer",
-      photo: "/Updated Headshots/Arjun_Headshot_Edited.png"
+      photo: "/Updated Headshots/Arjun_Headshot_Square.png"
     },
     {
       name: "Mrinal Chopde",
