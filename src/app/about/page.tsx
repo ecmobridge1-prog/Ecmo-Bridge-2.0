@@ -144,13 +144,11 @@ export default function About() {
                 <div key={index} className="group flex flex-col items-center">
                   {/* Team Member Photo */}
                   {member.photo ? (
-                    <div className="w-56 h-56 rounded-2xl shadow-xl shadow-purple-500/20 mb-4 group-hover:scale-105 transition-all duration-300 border border-purple-500/30 group-hover:border-purple-500/60 bg-gray-900/50 flex items-center justify-center overflow-hidden p-4">
-                      <img
-                        src={member.photo}
-                        alt={member.name}
-                        className="max-w-full max-h-full w-auto h-auto object-contain"
-                      />
-                    </div>
+                    <img
+                      src={member.photo}
+                      alt={member.name}
+                      className="w-44 h-44 rounded-2xl shadow-xl shadow-purple-500/20 object-cover mb-4 group-hover:scale-105 transition-all duration-300 border border-purple-500/30 group-hover:border-purple-500/60"
+                    />
                   ) : (
                     <div className="w-44 h-44 bg-gradient-to-br from-purple-700 to-purple-900 rounded-2xl shadow-xl shadow-purple-500/20 flex items-center justify-center mb-4 group-hover:scale-105 transition-all duration-300 border border-purple-500/30">
                       <svg className="w-20 h-20 text-purple-200" fill="currentColor" viewBox="0 0 20 20">
