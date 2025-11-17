@@ -31,7 +31,9 @@ export default function RootLayout({
         <body className={`${geistSans.variable} ${geistMono.variable}`}>
           <AuthMonitor />
           <Navigation />
-          {children}
+          <div className="pt-20">
+            {children}
+          </div>
         </body>
       </html>
     </ClerkProvider>

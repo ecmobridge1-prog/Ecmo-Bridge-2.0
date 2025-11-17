@@ -9,7 +9,6 @@ const navLinks = [
   { label: "Home", href: "/" },
   { label: "About", href: "/about" },
   { label: "Dashboard", href: "/dashboard" },
-  { label: "Verify NPI", href: "/verify-npi" },
 ];
 
 export default function Navigation() {
