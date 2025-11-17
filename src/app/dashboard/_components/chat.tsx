@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useUser } from "@clerk/nextjs";
 import { getAllUsers, getAllPatients, createChatWithMembers, getUserChats, getChatMessages, sendMessage, leaveChatMember, getChatMembers, createQuestionnaire, sendQuestionnaireMessage, getQuestionnaireById, getQuestionsWithResponses, addQuestion, addResponse } from "@/lib/queries";
 import { clerkIdToUuid } from "@/lib/utils";
@@ -116,6 +116,7 @@ export default function Chat() {
   
   // Questionnaire states (UI only)
   const [isCreatingQuestionnaire, setIsCreatingQuestionnaire] = useState(false);
+  const [showQuestionnaireMenu, setShowQuestionnaireMenu] = useState(false);
   const [questionnaireTitle, setQuestionnaireTitle] = useState("");
   const [chatMembers, setChatMembers] = useState<User[]>([]);
   const [openQuestionnaireId, setOpenQuestionnaireId] = useState<string | null>(null);
@@ -126,8 +127,26 @@ export default function Chat() {
   const [newQuestion, setNewQuestion] = useState("");
   const [answeringQuestionId, setAnsweringQuestionId] = useState<string | null>(null);
   const [answerText, setAnswerText] = useState("");
+  const menuRef = useRef<HTMLDivElement>(null);
 
   // No localStorage or Q/A for now
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowQuestionnaireMenu(false);
+      }
+    };
+
+    if (showQuestionnaireMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showQuestionnaireMenu]);
 
   // Fetch user's chats on component mount
   useEffect(() => {
@@ -597,15 +616,47 @@ export default function Chat() {
         {/* Message Input Area */}
         <div className="p-4 border-t border-gray-200">
           <div className="flex gap-2">
-            <button
-              onClick={() => setIsCreatingQuestionnaire(true)}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium flex items-center gap-2"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span>Launch Questionnaire</span>
-            </button>
+            {/* Questionnaire Menu Button */}
+            <div className="relative" ref={menuRef}>
+              <button
+                onClick={() => setShowQuestionnaireMenu(!showQuestionnaireMenu)}
+                className="w-10 h-10 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium flex items-center justify-center"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+              </button>
+              
+              {/* Click Menu */}
+              {showQuestionnaireMenu && (
+                <div className="absolute bottom-full left-0 mb-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-50 overflow-hidden">
+                  <button
+                    onClick={() => {
+                      setIsCreatingQuestionnaire(true);
+                      setShowQuestionnaireMenu(false);
+                    }}
+                    className="w-full px-4 py-3 text-left text-gray-800 hover:bg-blue-50 transition-colors font-medium flex items-center gap-2 border-b border-gray-100"
+                  >
+                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                    <span>Create Questionnaire</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      // Placeholder - no functionality yet
+                      setShowQuestionnaireMenu(false);
+                    }}
+                    className="w-full px-4 py-3 text-left text-gray-800 hover:bg-blue-50 transition-colors font-medium flex items-center gap-2"
+                  >
+                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    <span>Import Questionnaire</span>
+                  </button>
+                </div>
+              )}
+            </div>
             <input
               type="text"
               value={messageText}

@@ -4,47 +4,47 @@ export default function About() {
     {
       name: "Huzaifah Sheikh",
       role: "Team Lead",
-      photo: "/group members/Huz.png"
+      photo: "/Updated Headshots/Huzaifah_S_Headshot.jpg"
     },
     {
       name: "Neha Kanjamala",
       role: "Front-End Engineer",
-      photo: "/group members/Neha.png"
+      photo: "/Updated Headshots/Neha headshot.jpg"
     },
     {
       name: "Jia Cheng Kang",
       role: "Back-End Engineer",
-      photo: "/group members/Jc.jpg"
+      photo: "/Updated Headshots/Jia Cheng Kang - Headshot.jpg"
     },
     {
       name: "Arjun Chaudhary",
       role: "Back-End Engineer",
-      photo: "/group members/Arjun.png"
+      photo: "/Updated Headshots/Arjun_Headshot_Square.png"
     },
     {
       name: "Mrinal Chopde",
       role: "Front-End Engineer",
-      photo: "/group members/Mrinal.png"
+      photo: "/Updated Headshots/Mrinal.jpg"
     },
     {
       name: "Ameya Patibanda",
       role: "Front-End Engineer",
-      photo: "/group members/Ameya.png"
+      photo: "/Updated Headshots/ameya.jpg"
     },
     {
       name: "Harshit Kumar",
       role: "Back-End Engineer",
-      photo: "/group members/Harshit.png"
+      photo: "/Updated Headshots/Harshit_Headshot.jpg"
     },
     {
       name: "Pranav Kondapalli",
       role: "Front-End Engineer",
-      photo: "/group members/Pranav.png"
+      photo: "/Updated Headshots/pranavheadshot.jpg"
     },
     {
       name: "Abdimalik Abdirahman",
       role: "Back-End Engineer",
-      photo: "/group members/Abdi.png"
+      photo: "/Updated Headshots/Abdi.jpg"
     }
   ];
 
@@ -98,10 +98,6 @@ export default function About() {
       </div>
       <main className="max-w-7xl mx-auto px-6 py-12 relative z-10">
         <div className="text-center">
-          <h1 className="text-5xl font-bold text-white mb-12">
-            About ECMO Bridge
-          </h1>
-
           {/* Logo Section */}
           <div className="bg-gray-900/70 backdrop-blur-md rounded-2xl shadow-2xl p-12 mb-10 border border-purple-500/20">
             <div className="flex items-center justify-center gap-16">

@@ -867,3 +867,259 @@ export async function getQuestionnairesByPatient(patientId: string) {
     throw error;
   }
 }
+
+// ============================================
+// ZOOM MEETING QUERIES
+// ============================================
+
+/**
+ * Create a new Zoom meeting record
+ * @param meetingData - Meeting data including patient_id, created_by_user_id, meeting_type, etc.
+ * @returns The newly created meeting record
+ */
+export async function createZoomMeeting(meetingData: {
+  patientId: string;
+  createdByUserId: string;
+  meetingType: 'instant' | 'scheduled';
+  scheduledStartTime?: string | null;
+  zoomMeetingId: number;
+  zoomMeetingNumber: number;
+  joinUrl: string;
+  startUrl: string;
+  topic?: string | null;
+  duration: number;
+  timezone: string;
+  password?: string | null;
+}) {
+  const { data, error } = await supabase
+    .from('zoom_meetings')
+    .insert([
+      {
+        patient_id: meetingData.patientId,
+        created_by_user_id: meetingData.createdByUserId,
+        meeting_type: meetingData.meetingType,
+        scheduled_start_time: meetingData.scheduledStartTime || null,
+        zoom_meeting_id: meetingData.zoomMeetingId,
+        zoom_meeting_number: meetingData.zoomMeetingNumber,
+        join_url: meetingData.joinUrl,
+        start_url: meetingData.startUrl,
+        topic: meetingData.topic || null,
+        duration: meetingData.duration,
+        timezone: meetingData.timezone,
+        password: meetingData.password || null,
+        status: 'scheduled',
+      },
+    ])
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error creating Zoom meeting:', error);
+    throw error;
+  }
+
+  return data;
+}
+
+/**
+ * Get all Zoom meetings for a specific patient
+ * @param patientId - The patient's UUID
+ * @returns Array of meetings for the patient
+ */
+export async function getZoomMeetingsByPatient(patientId: string) {
+  const { data, error } = await supabase
+    .from('zoom_meetings')
+    .select(`
+      *,
+      patients:patient_id (
+        id,
+        name
+      ),
+      profiles:created_by_user_id (
+        id,
+        username,
+        full_name
+      )
+    `)
+    .eq('patient_id', patientId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching Zoom meetings by patient:', error);
+    throw error;
+  }
+
+  return data;
+}
+
+/**
+ * Get all Zoom meetings created by a specific user
+ * @param clerkUserId - The Clerk user ID
+ * @returns Array of meetings created by the user
+ */
+export async function getZoomMeetingsByUser(clerkUserId: string) {
+  const uuid = clerkIdToUuid(clerkUserId);
+  
+  const { data, error } = await supabase
+    .from('zoom_meetings')
+    .select(`
+      *,
+      patients:patient_id (
+        id,
+        name
+      )
+    `)
+    .eq('created_by_user_id', uuid)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching Zoom meetings by user:', error);
+    throw error;
+  }
+
+  return data;
+}
+
+/**
+ * Get all Zoom meetings (for viewing past meetings)
+ * @returns Array of all meetings
+ */
+export async function getAllZoomMeetings() {
+  const { data, error } = await supabase
+    .from('zoom_meetings')
+    .select(`
+      *,
+      patients:patient_id (
+        id,
+        name
+      ),
+      profiles:created_by_user_id (
+        id,
+        username,
+        full_name
+      )
+    `)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching all Zoom meetings:', error);
+    throw error;
+  }
+
+  return data;
+}
+
+/**
+ * Get a single Zoom meeting by ID
+ * @param meetingId - The meeting's UUID
+ * @returns The meeting data with related patient and creator info
+ */
+export async function getZoomMeetingById(meetingId: string) {
+  const { data, error } = await supabase
+    .from('zoom_meetings')
+    .select(`
+      *,
+      patients:patient_id (
+        id,
+        name
+      ),
+      profiles:created_by_user_id (
+        id,
+        username,
+        full_name
+      )
+    `)
+    .eq('id', meetingId)
+    .single();
+
+  if (error) {
+    console.error('Error fetching Zoom meeting by ID:', error);
+    throw error;
+  }
+
+  return data;
+}
+
+/**
+ * Add a participant to a Zoom meeting
+ * @param meetingId - The meeting's UUID
+ * @param userId - The user's UUID
+ * @param role - Participant role ('host' or 'participant')
+ * @returns The created participant record
+ */
+export async function addZoomMeetingParticipant(
+  meetingId: string,
+  userId: string,
+  role: 'host' | 'participant' = 'participant'
+) {
+  const { data, error } = await supabase
+    .from('zoom_meeting_participants')
+    .insert([
+      {
+        meeting_id: meetingId,
+        user_id: userId,
+        role: role,
+      },
+    ])
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error adding Zoom meeting participant:', error);
+    throw error;
+  }
+
+  return data;
+}
+
+/**
+ * Update Zoom meeting status
+ * @param meetingId - The meeting's UUID
+ * @param status - New status ('scheduled', 'started', 'ended', 'cancelled')
+ * @returns The updated meeting record
+ */
+export async function updateZoomMeetingStatus(
+  meetingId: string,
+  status: 'scheduled' | 'started' | 'ended' | 'cancelled'
+) {
+  const { data, error } = await supabase
+    .from('zoom_meetings')
+    .update({ status: status })
+    .eq('id', meetingId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error updating Zoom meeting status:', error);
+    throw error;
+  }
+
+  return data;
+}
+
+/**
+ * Get all participants for a Zoom meeting
+ * @param meetingId - The meeting's UUID
+ * @returns Array of participants with user profile information
+ */
+export async function getZoomMeetingParticipants(meetingId: string) {
+  const { data, error } = await supabase
+    .from('zoom_meeting_participants')
+    .select(`
+      *,
+      profiles:user_id (
+        id,
+        username,
+        full_name
+      )
+    `)
+    .eq('meeting_id', meetingId)
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching Zoom meeting participants:', error);
+    throw error;
+  }
+
+  return data;
+}
