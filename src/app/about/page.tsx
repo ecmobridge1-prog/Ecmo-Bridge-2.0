@@ -98,10 +98,6 @@ export default function About() {
       </div>
       <main className="max-w-7xl mx-auto px-6 py-12 relative z-10">
         <div className="text-center">
-          <h1 className="text-5xl font-bold text-white mb-12">
-            About ECMO Bridge
-          </h1>
-
           {/* Logo Section */}
           <div className="bg-gray-900/70 backdrop-blur-md rounded-2xl shadow-2xl p-12 mb-10 border border-purple-500/20">
             <div className="flex items-center justify-center gap-16">
