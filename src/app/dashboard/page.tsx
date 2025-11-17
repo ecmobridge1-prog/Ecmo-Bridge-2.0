@@ -107,7 +107,7 @@ export default function Dashboard() {
       </div>
       <UserSync />
       <Sidebar activeSection={activeSection} onSectionChange={setActiveSection} />
-      <main className="ml-64 px-8 py-12 relative z-10">
+      <main className="ml-64 px-8 pt-8 pb-12 relative z-10">
         <div className="max-w-6xl mx-auto">
           {renderContent()}
         </div>
