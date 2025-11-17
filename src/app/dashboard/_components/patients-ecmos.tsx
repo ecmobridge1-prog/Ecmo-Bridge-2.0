@@ -602,27 +602,27 @@ export default function PatientsECMOs() {
 
         {/* Patient Intake Request Form Modal */}
         {isModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
-            <div className="bg-white rounded-xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto relative border-2 border-blue-300 my-8">
-              {/* Close button - Fixed position */}
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto pt-24">
+            <div className="bg-white rounded-xl shadow-2xl w-[700px] max-h-[80vh] overflow-y-auto relative border-2 border-blue-300 my-8">
+              {/* Close button - Absolute position */}
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="fixed top-6 right-6 z-10 bg-white rounded-full p-2 shadow-lg text-gray-400 hover:text-gray-600 transition-colors hover:bg-gray-50"
+                className="absolute top-4 right-4 z-10 bg-red-500 hover:bg-red-600 rounded-full p-2 shadow-lg text-white transition-colors"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
 
               {/* Form Container */}
-              <div className="bg-gray-100 rounded-lg p-6">
+              <div className="bg-gray-100 rounded-lg p-3">
                 {/* Header */}
-                <h3 className="text-2xl font-semibold text-blue-800 text-center mb-8">
+                <h3 className="text-lg font-semibold text-blue-800 text-center mb-3">
                   Patient Intake Request Form
                 </h3>
 
                 {/* Top Section - Patient Identification */}
-                <div className="grid grid-cols-6 gap-4 mb-6">
+                <div className="grid grid-cols-6 gap-2 mb-3">
                   {/* Name Fields */}
                   <div className="col-span-3">
                     <div className="flex gap-2">
@@ -695,9 +695,9 @@ export default function PatientsECMOs() {
                 </div>
 
                 {/* Middle Section - Vitals */}
-                <div className="grid grid-cols-2 gap-8 mb-6">
+                <div className="grid grid-cols-2 gap-3 mb-3">
                   {/* Left Column */}
-                  <div className="space-y-4">
+                  <div className="space-y-2">
                     <div className="flex items-center gap-3">
                       <label className="text-sm text-gray-700 w-20">Weight</label>
                       <input
@@ -741,7 +741,7 @@ export default function PatientsECMOs() {
                   </div>
 
                   {/* Right Column */}
-                  <div className="space-y-4">
+                  <div className="space-y-2">
                     <div className="flex items-center gap-3">
                       <label className="text-sm text-gray-700 w-20">Pulse</label>
                       <input
@@ -776,15 +776,15 @@ export default function PatientsECMOs() {
                 </div>
 
                 {/* Existing Fields */}
-                <div className="grid grid-cols-2 gap-6 mb-6">
+                <div className="grid grid-cols-2 gap-3 mb-3">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
                       Special Care
                     </label>
                     <select
                       value={formData.specialCare}
                       onChange={(e) => handleInputChange('specialCare', e.target.value)}
-                      className="w-full px-4 py-2 bg-white border border-blue-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-black"
+                      className="w-full px-3 py-2 bg-white border border-blue-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-black"
                     >
                       <option value="">Select care type...</option>
                       <option value="ICU">ICU</option>
@@ -795,13 +795,13 @@ export default function PatientsECMOs() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
                       ECMO Type
                     </label>
                     <select
                       value={formData.type}
                       onChange={(e) => handleInputChange('type', e.target.value)}
-                      className="w-full px-4 py-2 bg-white border border-blue-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-black"
+                      className="w-full px-3 py-2 bg-white border border-blue-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-black"
                     >
                       <option value="">Select ECMO type...</option>
                       <option value="VA ECMO">VA ECMO</option>
@@ -811,8 +811,8 @@ export default function PatientsECMOs() {
                 </div>
 
                 {/* Location */}
-                <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                <div className="mb-3">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Location
                   </label>
                   <Autocomplete
@@ -833,7 +833,7 @@ export default function PatientsECMOs() {
                     <input
                       type="text"
                       placeholder="Search for an address..."
-                      className="w-full px-4 py-2 bg-white border border-blue-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-black"
+                      className="w-full px-3 py-2 bg-white border border-blue-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-black"
                     />
                   </Autocomplete>
                   {selectedLocation && (
@@ -844,16 +844,16 @@ export default function PatientsECMOs() {
                 </div>
 
                 {/* Notes */}
-                <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                <div className="mb-3">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Notes
                   </label>
                   <textarea
                     placeholder="Additional notes about the patient..."
                     value={formData.notes}
                     onChange={(e) => handleInputChange('notes', e.target.value)}
-                    rows={4}
-                    className="w-full px-4 py-2 bg-white border border-blue-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none text-black"
+                    rows={2}
+                    className="w-full px-3 py-2 bg-white border border-blue-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none text-black text-sm"
                   />
                 </div>
 
