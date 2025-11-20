@@ -66,7 +66,7 @@ export default function Home() {
             ECMO Bridge
           </h1>
           <p className="text-2xl text-gray-300 mb-14 max-w-3xl mx-auto leading-relaxed">
-            Facilitating physician-to-physician communication for ECMO machine coordination and patient care
+            Saving Minutes to Save Lives
           </p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center">
             <Link

@@ -109,7 +109,8 @@ export default function About() {
       <main className="max-w-7xl mx-auto px-6 py-12 relative z-10">
         <div className="text-center">
           {/* Logo Section */}
-          <div className="bg-gray-900/70 backdrop-blur-md rounded-2xl shadow-2xl p-12 mb-10 border border-purple-500/20">
+           {/*<div className="bg-gray-900/70 backdrop-blur-md rounded-2xl shadow-2xl p-12 mb-10 border border-purple-500/20">*/}
+           <div className="bg-black/40 backdrop-blur-md rounded-2xl shadow-2xl p-12 border border-purple-500/10"> 
             <div className="flex items-center justify-center gap-16">
               {/* Your Team Logo */}
               <div className="flex flex-col items-center">
@@ -138,6 +139,30 @@ export default function About() {
                 <p className="text-xl font-bold bg-gradient-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent">Mayo Clinic</p>
               </div>
             </div>
+          </div>
+
+          {/* The Problem Section */}
+          <div className="bg-black/40 backdrop-blur-md rounded-2xl shadow-2xl p-12 border border-purple-500/10">
+            <h2 className="text-4xl font-bold text-white mb-6 text-center">
+              The Problem
+            </h2>
+            <p className="text-xl text-gray-300 leading-relaxed text-center max-w-4xl mx-auto">
+            Today, ECMO allocation still depends on physicians cold-calling hospitals individually to locate both an available 
+            ECMO machine and a cannulating surgeon. This inefficient coordination leads to dangerous delays and leaves many ECMO 
+            machines underutilized, resulting in preventable deaths and unnecessary ICU costs.
+            </p>
+          </div>
+
+          {/* Our Solution Section */}
+          <div className="bg-black/40 backdrop-blur-md rounded-2xl shadow-2xl p-12 border border-purple-500/10">
+            <h2 className="text-4xl font-bold text-white mb-6 text-center">
+              Our Solution
+            </h2>
+            <p className="text-xl text-gray-300 leading-relaxed text-center max-w-4xl mx-auto">
+            Our platform provides hospitals with real-time ECMO availability and
+            instant physician-to-physician coordination, enabling the fastest possible transfer to the first capable center. 
+            It is the only solution that unifies statewide cross-hospital communication to eliminate treatment delays.
+            </p>
           </div>
 
           {/* Team Section */}
