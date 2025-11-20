@@ -833,23 +833,23 @@ export default function PatientsECMOs() {
         {/* Patient Detail Modal */}
         {isDetailModalOpen && selectedPatient && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-            <div className="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto relative">
-              {/* Close button */}
-              <button
-                onClick={() => {
-                  setIsDetailModalOpen(false);
-                  setSelectedPatient(null);
-                }}
-                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors z-10"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-
+            <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto relative">
               {/* Header */}
-              <div className="bg-gradient-to-r from-purple-600 to-purple-800 text-white p-6 rounded-t-xl">
-                <h2 className="text-2xl font-bold mb-2">{selectedPatient.name}</h2>
+              <div className="bg-gradient-to-r from-purple-600 to-purple-800 text-white p-4 rounded-t-xl relative">
+                {/* Close button */}
+                <button
+                  onClick={() => {
+                    setIsDetailModalOpen(false);
+                    setSelectedPatient(null);
+                  }}
+                  className="absolute top-4 right-4 bg-white/20 hover:bg-white/30 rounded-full p-2 transition-colors z-50"
+                >
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+
+                <h2 className="text-xl font-bold mb-1 pr-12">{selectedPatient.name}</h2>
                 <div className="flex items-center gap-3">
                   <span className="px-3 py-1 bg-white/20 rounded-full text-sm font-medium">
                     {selectedPatient.type}
@@ -859,16 +859,16 @@ export default function PatientsECMOs() {
               </div>
 
               {/* Content */}
-              <div className="p-6 space-y-6">
+              <div className="p-4 space-y-4">
                 {/* Demographics */}
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                  <h3 className="text-base font-semibold text-gray-800 mb-2 flex items-center gap-2">
                     <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
                     Demographics
                   </h3>
-                  <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
+                  <div className="grid grid-cols-2 gap-3 bg-gray-50 p-3 rounded-lg">
                     <div>
                       <p className="text-xs text-gray-500 uppercase tracking-wide">Date of Birth</p>
                       <p className="text-sm font-medium text-gray-900">{selectedPatient.dob || 'Not provided'}</p>
@@ -888,13 +888,13 @@ export default function PatientsECMOs() {
                 {(selectedPatient.weight || selectedPatient.blood_pressure || selectedPatient.pulse || 
                   selectedPatient.temperature || selectedPatient.respiration_rate || selectedPatient.pulse_oximetry) && (
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                    <h3 className="text-base font-semibold text-gray-800 mb-2 flex items-center gap-2">
                       <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                       </svg>
                       Vital Signs
                     </h3>
-                    <div className="grid grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg">
+                    <div className="grid grid-cols-3 gap-3 bg-gray-50 p-3 rounded-lg">
                       {selectedPatient.weight && (
                         <div>
                           <p className="text-xs text-gray-500 uppercase tracking-wide">Weight</p>
@@ -938,13 +938,13 @@ export default function PatientsECMOs() {
                 {/* Medical Information */}
                 {(selectedPatient.failure_type || selectedPatient.notes) && (
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                    <h3 className="text-base font-semibold text-gray-800 mb-2 flex items-center gap-2">
                       <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
                       Medical Information
                     </h3>
-                    <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+                    <div className="bg-gray-50 p-3 rounded-lg space-y-2">
                       {selectedPatient.failure_type && (
                         <div>
                           <p className="text-xs text-gray-500 uppercase tracking-wide">Failure Type</p>
